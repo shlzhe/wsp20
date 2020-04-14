@@ -3,8 +3,6 @@ const express = require('express')
 const path = require('path')
 const app = express()
 
-var a = 0
-
 exports.httpReq = functions.https.onRequest(app);
 
 app.use(express.urlencoded({ extended: false }))
