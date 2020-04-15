@@ -16,7 +16,7 @@ app.set('views', './ejsviews')
 //frontend programming
 
 function frontendHandler(req, res) {
-    res.sendFile(path.join(__dirname, '/prodadmin/prodadmin.html'))
+    res.sendFile(path.join(__dirname, '/librarian/librarian.html'))
 }
 
 app.get('/login', frontendHandler);
@@ -103,26 +103,25 @@ app.post('/b/signin', async (req, res) => {
 
         req.session.idToken = idToken
 
-        if (userRecord.user.email === Constants.SYSADMINEMAIL) {
+        /*if (userRecord.user.email === Constants.SYSADMINEMAIL) {
             res.setHeader('Cache-Control', 'private')
             res.redirect('/admin/sysadmin')
+        } else {*/
+        if (!req.session.cart) {
+            res.setHeader('Cache-Control', 'private')
+            res.redirect('/')
         } else {
-            if (!req.session.cart) {
-                res.setHeader('Cache-Control', 'private')
-                res.redirect('/')
-
-            } else {
-                res.setHeader('Cache-Control', 'private')
-                res.redirect('/b/shoppingcart')
-            }
+            res.setHeader('Cache-Control', 'private')
+            res.redirect('/b/shoppingcart')
         }
+        //}
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.render('signin', { error: e, user: null, cartCount: 0 })
     }
 })
 
-app.get('/b/signout', (req, res) => {
+app.get('/b/signout', async (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.log("=========== session.destroy error: ", err)

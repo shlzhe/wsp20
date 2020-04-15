@@ -1,5 +1,5 @@
 function add_page() {
-    auth('prodadmin@test.com', add_page_secured, '/login')
+    auth('prodadmin@test.com', add_page_secured, '/')
 }
 
 let glImageFile2Add;
@@ -7,8 +7,8 @@ let glImageFile2Add;
 function add_page_secured() {
     glPageContent.innerHTML = '<h1>Add Page</h1>'
     glPageContent.innerHTML += `
-        <a href='/home' class="btn btn-outline-primary">Home</a>    
-        <a href='/show' class="btn btn-outline-primary">Show Products</a>
+        <a href='/home' class="btn btn-primary">Home</a>    
+        <a href='/show' class="btn btn-primary">Show Products</a>
         <div class="form-group">
             Name: <input class="form-control" type="text" id="name" />
             <p id="name_error" style="color:red" />
@@ -27,6 +27,7 @@ function add_page_secured() {
             <p id="image_error" style="color:red" />
         </div>
         <button class="btn btn-primary" type="button" onclick="addProduct()">Add</button>
+        <a href='/home' class="btn btn-danger">Cancel</a>    
     `;
 
     const imageButton = document.getElementById('imageButton')

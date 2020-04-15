@@ -1,5 +1,5 @@
 function show_page() {
-    auth('prodadmin@test.com', show_page_secured, '/login')
+    auth('prodadmin@test.com', show_page_secured, '/')
 }
 
 let products
@@ -7,9 +7,9 @@ let products
 async function show_page_secured() {
     glPageContent.innerHTML = '<h1>Show Products</h1>'
     glPageContent.innerHTML += `
-        <a href='/home' class="btn btn-outline-primary">Home</a>    
-        <a href='/add' class="btn btn-outline-primary">Add Products</a>
-        <br>
+        <a href='/home' class="btn btn-primary">Home</a>    
+        <a href='/add' class="btn btn-primary">Add Products</a>
+        <br><br>
         `
 
     try {
@@ -43,7 +43,7 @@ async function show_page_secured() {
             <p class="card-text">${p.price}<br/>${p.summary}</p>
             <button class="btn btn-primary" type="button"
                 onclick="editProduct(${index})">Edit</button>
-            <button class="btn btn-primary" type="button"
+            <button class="btn btn-danger" type="button"
                 onclick="deleteProduct(${index})">Delete</button>
             </div>
         </div>
