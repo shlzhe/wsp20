@@ -20,6 +20,14 @@ class ShoppingCart {
         }
     }
 
+    remove(id) {
+        for (const item of this.contents) {
+            if (item.product.id === id) {
+                this.contents.splice(this.contents.indexOf(item), 1)
+            }
+        }
+    }
+
     getTotal() {
         let sum = 0
         for (const item of this.contents) {

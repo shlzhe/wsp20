@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <%- include('partials/header.ejs')%>
+
+    <title>Book Details</title>
+</head>
+
+<body>
+    <%- include('partials/nav.ejs', {page: 'product', user}) %>
+
+    <h1>Book Detailed Information</h1>
+
+    <% for(let p of product){ %>
+    <div style="float:left; width: 50%">
+        <img height=200 src="<%= p.data.image_url%>">
+        <table class="table">
+            <tr>
+                <td>Product Name</td>
+                <td><%= p.data.name %></td>
+            </tr>
+            <tr>
+                <td>Price</td>
+                <td>$<%= p.data.price.toFixed(2) %></td>
+            </tr>
+            <tr>
+                <td>Summary</td>
+                <td><%= p.data.summary %></td>
+            </tr>
+            <tr>
+                <td>Times You Have Purchased</td>
+                <% if(!user) { %>
+                <td><a href="/b/signin">Sign in</a> to see your order history</td>
+                <% } else { %>
+                <td><%= times %></td>
+                <% } %>
+            </tr>
+            <tr>
+                <td>Quantity You Have Purchased</td>
+                <% if(!user) { %>
+                <td><a href="/b/signin">Sign in</a> to see your order history</td>
+                <% } else { %>
+                <td><%= qty %></td>
+                <% } %>
+            </tr>
+            <tr>
+                <td>Amount You Have Spent</td>
+                <% if(!user) { %>
+                <td><a href="/b/signin">Sign in</a> to see your order history</td>
+                <% } else { %>
+                <td>$<%= qty*p.data.price.toFixed(2) %></td>
+                <% } %>
+            </tr>
+        </table>
+        <form action="/" method="get" style="display:inline">
+            <button type="submit" class="btn btn-primary">Back</button>
+        </form>
+        <form action="/b/add2cart" method="post" style="display:inline">
+            <input type="hidden" name="docId" value="<%= p.id %>">
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
+            <input class="qtyinput" type="number" name="qty" value="1" min="1" max="1000" style="display:inline"
+                required> </form>
+    </div>
+    <% } %>
+
+    <%- include('partials/scripts.ejs')%>
+</body>
+
+</html>

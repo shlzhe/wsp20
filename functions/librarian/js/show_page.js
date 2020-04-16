@@ -37,7 +37,7 @@ async function show_page_secured() {
         if (!p) continue
         glPageContent.innerHTML += `
         <div id="${p.docId}" class="card" style="width: 18rem; display: inline-block">
-            <img src="${p.image_url}" class="card-img-top">
+            <img src="${p.image_url}" class="card-img-top" style="height:18rem; object-fit: contain;">
             <div class="card-body">
             <h5 class="card-title">${p.name}</h5>
             <p class="card-text">${p.price}<br/>${p.summary}</p>
