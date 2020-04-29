@@ -59,10 +59,10 @@ const Constants = require('./myconstants.js')
 
 app.get('/', auth, async (req, res) => {
     const cartCount = req.session.cart ? req.session.cart.length : 0
-    const coll = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
     try {
         let products = []
-        const snapshot = await coll.orderBy("name").get()
+        const snapshot = await coll.orderBy("title").get()
         snapshot.forEach(doc => {
             products.push({ id: doc.id, data: doc.data() })
         })

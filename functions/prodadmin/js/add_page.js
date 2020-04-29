@@ -10,23 +10,40 @@ function add_page_secured() {
         <a href='/home' class="btn btn-outline-primary">Home</a>    
         <a href='/show' class="btn btn-outline-primary">Show Products</a>
         <div class="form-group">
-            Name: <input class="form-control" type="text" id="name" />
-            <p id="name_error" style="color:red" />
+            Title: <input class="form-control" type="text" id="title" />
+            <p id="title_error" style="color:red" />
         </div>
+
         <div class="form-group">
-            Summary:<br>
-            <textarea class="form-control" id="summary" cols="40" rows="5"></textarea>
+            Author<input class="form-control" type="text" id="author"></>
+            <p id="author_error" style="color:red" />
+        </div>
+
+        <div class="form-group">
+            Publisher<input class="form-control" type="text" id="pub" ></>
+            <p id="pub_error" style="color:red" />
+        </div>
+
+        <div class="form-group">
+            Summary<textarea class="form-control" id="summary" cols="40" rows="4"></textarea>
             <p id="summary_error" style="color:red" />
         </div>
+
         <div class="form-group">
-            Price: <input class="form-control" type="number" id="price" />
-            <p id="price_error" style="color:red" />
+            Year: <input class="form-control" type="number" id="year" />
+            <p id="year_error" style="color:red" />
         </div>
+
+        <div class="form-group">
+            ISBN: <input class="form-control" type="number" id="isbn" />
+            <p id="isbn_error" style="color:red" />
+        </div>
+
         <div class="form-group">
             Image: <input type="file" id="imageButton" value="upload" />
             <p id="image_error" style="color:red" />
         </div>
-        <button class="btn btn-primary" type="button" onclick="addProduct()">Add</button>
+        <button class="btn btn-primary" type="button" onclick="addBook()">Add</button>
     `;
 
     const imageButton = document.getElementById('imageButton')
@@ -36,22 +53,35 @@ function add_page_secured() {
     })
 }
 
-async function addProduct() {
-    const name = document.getElementById('name').value
-    const summary = document.getElementById('summary').value
-    let price = document.getElementById('price').value
+async function addBook() {
 
-    const nameErrorTag = document.getElementById('name_error')
+    const status = 0;
+    const title = document.getElementById('title').value
+    const author = document.getElementById('author').value
+    const pub = document.getElementById('pub').value
+    const summary = document.getElementById('summary').value
+    let year = document.getElementById('year').value
+    let isbn = document.getElementById('isbn').value
+
+    const titleErrorTag = document.getElementById('title_error')
+    const authorErrorTag = document.getElementById('author_error')
+    const pubErrorTag = document.getElementById('pub_error')
     const summaryErrorTag = document.getElementById('summary_error')
-    const priceErrorTag = document.getElementById('price_error')
+    const yearErrorTag = document.getElementById('year_error')
+    const isbnErrorTag = document.getElementById('isbn_error')
     const imageErrorTag = document.getElementById('image_error')
 
-    nameErrorTag.innerHTML = validate_name(name)
+    titleErrorTag.innerHTML = validate_title(title)
+    authorErrorTag.innerHTML = validate_author(author)
+    pubErrorTag.innerHTML = validate_pub(pub)
     summaryErrorTag.innerHTML = validate_summary(summary)
-    priceErrorTag.innerHTML = validate_price(price)
-    imageErrorTag.innerHTML = !glImageFile2Add ? 'Error: image file not selected' : null
+    yearErrorTag.innerHTML = validate_year(year)
+    isbnErrorTag.innerHTML = validate_isbn(isbn)
+    imageErrorTag.innerHTML = !glImageFile2Add ? 'Error: No image selected' : null
 
-    if (nameErrorTag.innerHTML || summaryErrorTag.innerHTML || priceErrorTag.innerHTML || imageErrorTag.innerHTML) {
+    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || pubErrorTag.innerHTML || 
+        summaryErrorTag.innerHTML || yearErrorTag.innerHTML || isbnErrorTag.innerHTML || 
+        imageErrorTag.innerHTML) {
         return
     }
 
@@ -61,12 +91,13 @@ async function addProduct() {
         const taskSnapshot = await ref.put(glImageFile2Add)
         const image_url = await taskSnapshot.ref.getDownloadURL()
 
-        price = Number(price)
-        await firebase.firestore().collection(COLLECTION).doc().set({ name, summary, price, image, image_url })
+        year = Number(year)
+        isbn = Number(isbn)
 
-        //console.log('image_url', image_url)
+        await firebase.firestore().collection(COLLECTION).doc().set({ status, title, author, pub, summary, year, isbn, image, image_url })
+
         glPageContent.innerHTML = `
-            <h1>${name} is added</h1>
+            <h1>${title} has been added!</h1>
             <a href="/show" class="btn btn-outline-primary">Show All</a>
         `
 
@@ -75,5 +106,6 @@ async function addProduct() {
             <h1>Cannot add a product</h1>
             ${JSON.stringify(e)}
         `
+        console.log(e)
     }
 }
