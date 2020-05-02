@@ -16,7 +16,7 @@ app.set('views', './ejsviews')
 //frontend programming
 
 function frontendHandler(req, res) {
-    res.sendFile(path.join(__dirname, '/prodadmin/prodadmin.html'))
+    res.sendFile(path.join(__dirname, '/librarian/librarian.html'))
 }
 
 app.get('/login', frontendHandler);
@@ -74,6 +74,37 @@ app.get('/', auth, async (req, res) => {
     }
 })
 
+app.post('/b/book', auth, async (req, res) => {
+    const cartCount = req.session.cart ? req.session.cart.length : 0
+    const coll1 = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    const coll2 = firebase.firestore().collection(Constants.COLL_ORDERS)
+    const id = req.body.docId
+
+    try {
+        let product = []
+        const snapshot = await coll1.get()
+        snapshot.forEach(doc => {
+            if (doc.id === id) product.push({ id: doc.id, data: doc.data() })
+        })
+        if (req.user) {
+            var times = 0, qty = 0
+            const snapshot2 = await coll2.where("uid", "==", req.user.uid).get()
+            snapshot2.forEach(doc => {
+                for (let i = 0; i < doc.data().cart.length; i++)
+                    if (doc.data().cart[i].product.id === id) {
+                        times++
+                        qty += parseInt(doc.data().cart[i].qty)
+                    }
+            })
+        }
+        res.setHeader('Cache-Control', 'private')
+        res.render('book.ejs', { product, times, qty, user: req.user, cartCount })
+    } catch (e) {
+        res.setHeader('Cache-Control', 'private')
+        res.render('storefront.ejs', { error: e, user: req.user, cartCount })
+    }
+})
+
 app.get('/b/about', auth, (req, res) => {
     const cartCount = req.session.cart ? req.session.cart.length : 0
     res.setHeader('Cache-Control', 'private')
@@ -103,26 +134,25 @@ app.post('/b/signin', async (req, res) => {
 
         req.session.idToken = idToken
 
-        if (userRecord.user.email === Constants.SYSADMINEMAIL) {
+        /*if (userRecord.user.email === Constants.SYSADMINEMAIL) {
             res.setHeader('Cache-Control', 'private')
             res.redirect('/admin/sysadmin')
+        } else {*/
+        if (!req.session.cart) {
+            res.setHeader('Cache-Control', 'private')
+            res.redirect('/')
         } else {
-            if (!req.session.cart) {
-                res.setHeader('Cache-Control', 'private')
-                res.redirect('/')
-
-            } else {
-                res.setHeader('Cache-Control', 'private')
-                res.redirect('/b/shoppingcart')
-            }
+            res.setHeader('Cache-Control', 'private')
+            res.redirect('/b/shoppingcart')
         }
+        //}
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.render('signin', { error: e, user: null, cartCount: 0 })
     }
 })
 
-app.get('/b/signout', (req, res) => {
+app.get('/b/signout', async (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.log("=========== session.destroy error: ", err)
@@ -178,6 +208,21 @@ app.get('/b/shoppingcart', authAndRedirectSignIn, (req, res) => {
     }
     res.setHeader('Cache-Control', 'private')
     res.render('shoppingcart.ejs', { message: false, cart, user: req.decodedIdToken, cartCount: cart.contents.length })
+})
+
+app.post('/b/remove', async (req, res) => {
+    const id = req.body.docId
+    const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    try {
+        let cart = ShoppingCart.deserialize(req.session.cart)
+        cart.remove(id)
+        req.session.cart = cart.serialize()
+        res.setHeader('Cache-Control', 'private')
+        res.redirect('/b/shoppingcart')
+    } catch (e) {
+        res.setHeader('Cache-Control', 'private')
+        res.send(JSON.stringify(e))
+    }
 })
 
 app.post('/b/checkout', authAndRedirectSignIn, async (req, res) => {

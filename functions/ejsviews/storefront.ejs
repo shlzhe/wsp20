@@ -13,7 +13,7 @@
 
 <body>
     <%- include('partials/nav.ejs', {page: 'storefront', user}) %>
-    <h1>My Store</h1>
+    <h1>Library</h1>
 
     <% if(error) {%>
     <p style="color: red"><%= JSON.stringify(error)%></p>
@@ -23,13 +23,17 @@
     <% for(let p of products){ %>
         
     <div class="card" style="width: 18rem; display: inline-block;">
-        <img src="<%= p.data.image_url%>" class="card-img-top">
+        <img src="<%= p.data.image_url%>" class="card-img-top" style="height:18rem; object-fit: contain;">
         <div class="card-body">
             <h5 class="card-title"><%= p.data.title %></h5>
-            <p class="card-text"><%= p.data.author %><br><%= p.data.pub %><br><%= p.data.status %></p>
-            <form action="/b/add2cart" method="post">
+            <p class="card-text">$(<%= p.data.price %>)<br><%= p.data.summary %></p>
+            <form action="/b/book" method="post" style="display:inline">
                 <input type="hidden" name="docId" value="<%= p.id %>">
-                <button type="submit" class="btn btn-primary">Add to ShoppingCart</button>
+                <button type="submit" class="btn btn-primary">Details</button>
+            </form>
+            <form action="/b/add2cart" method="post" style="display:inline">
+                <input type="hidden" name="docId" value="<%= p.id %>">
+                <button type="submit" class="btn btn-primary">Add to List</button>
             </form>
         </div>
     </div>

@@ -30,6 +30,16 @@
                 <a class="nav-link" href="/b/shoppingcart">
                     ShoppingCart<%= cartCount > 0 ? `(${cartCount})` : ''%></a>
             </li>
+            <% if(user && (user.email === 'prodadmin@test.com' || user.email === 'sysadmin@test.com')) { %>
+            <li class="nav-item">
+                <a class="nav-link" href="/login">Librarian</a>
+            </li>
+            <% } %>
+            <% if(user && user.email === 'sysadmin@test.com') { %>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/sysadmin">SysAdmin</a>
+            </li>
+            <% } %>
         </ul>
     </div>
 </nav>

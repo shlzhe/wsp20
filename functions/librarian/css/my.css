@@ -1,0 +1,29 @@
+body {
+    background: url(backgroundimg.jpg) no-repeat center center fixed;
+    background-size: cover;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.top {
+    background-color: darkslategrey;
+    color: lightgoldenrodyellow;
+    padding: 0.5%;
+    top: 0px;
+    width: 100%;
+    position: fixed;
+    z-index: 1;
+}
+
+.content {
+    background-color: burlywood;
+    margin: 8% 9.5% 5%;
+    padding: 2%;
+    border-radius: 5px;
+}
+
+.form-signin {
+    width: 100%;
+    max-width: 400px;
+    padding: 15px;
+    margin: auto;
+}
