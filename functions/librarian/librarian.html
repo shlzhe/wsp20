@@ -12,12 +12,12 @@
 
     <link rel="stylesheet" href="css/my.css">
 
-    <title>Product Admin</title>
+    <title>Librarian</title>
 </head>
 
 <body>
-    <h1 class="display-5" style="background-color: blue; color:white">Product Admin's Page</h1>
-    <div class="jumbotron" id="page_content"></div>
+    <h1 class="top">Librarian's Page</h1>
+    <div class="content" id="page_content"></div>
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-app.js"></script>
@@ -49,8 +49,8 @@
 
     <script>
         const glPageContent = document.getElementById('page_content')
-        const IMAGE_FOLDER = 'products/'
-        const COLLECTION = 'products'
+        const IMAGE_FOLDER = 'books/'
+        const COLLECTION = 'books'
 
         window.onload = function () {
             const currentPath = window.location.pathname

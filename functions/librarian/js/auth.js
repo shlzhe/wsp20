@@ -7,4 +7,3 @@ function auth(email, success, fail_url) {
         }
     })
 }
-

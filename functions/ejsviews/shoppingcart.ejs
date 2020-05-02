@@ -29,17 +29,24 @@
                 <th scope="col">Qty</th>
                 <th scope="col">Sub-Total</th>
                 <th scope="col">Summary</th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
             <% for(let i=0; i < cart.contents.length; i++) {%>
             <tr>
-                <th scope="row"><img width=50 height=50 src="<%= cart.contents[i].product.image_url%>"></th>
+                <th scope="row"><img height=50 src="<%= cart.contents[i].product.image_url%>"></th>
                 <td><%= cart.contents[i].product.name%></td>
                 <td><%= cart.contents[i].product.price.toFixed(2)%></td>
                 <td><%= cart.contents[i].qty%></td>
                 <td><%= (cart.contents[i].qty * cart.contents[i].product.price).toFixed(2)%></td>
                 <td><%= cart.contents[i].product.summary%></td>
+                <td>
+                    <form action="/b/remove" method="post">
+                        <input type="hidden" name="docId" value="<%= cart.contents[i].product.id %>">
+                        <td width="10%"><button type="submit" class="btn btn-primary">Remove</button></td>
+                    </form>
+                </td>
             </tr>
             <% } %>
         </tbody>
