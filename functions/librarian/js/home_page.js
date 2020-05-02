@@ -8,6 +8,7 @@ async function home_page_secured() {
         <a href='/add' class="btn btn-primary">Add a Product</a>    
         <a href='/show' class="btn btn-primary">Show Products</a>
         <a href='/' class="btn btn-primary">Back to Library</a>
+        <a href='/logout' class="btn btn-primary">Log Out</a>
         <button class="btn btn-danger" type="button" onclick="logOut()">Log Out</button>
         `
 }

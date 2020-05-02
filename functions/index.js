@@ -20,6 +20,7 @@ function frontendHandler(req, res) {
 }
 
 app.get('/login', frontendHandler);
+app.get('/logout', frontendHandler)
 app.get('/home', frontendHandler);
 app.get('/add', frontendHandler);
 app.get('/show', frontendHandler);
@@ -153,13 +154,17 @@ app.post('/b/signin', async (req, res) => {
 })
 
 app.get('/b/signout', async (req, res) => {
+    const decodedIdToken = await adminUtil.verifyIdToken(req.session.idToken)
+    const email = decodedIdToken.email
+    console.log("==============^^^^^^^^^^^^^^^^^^" + email)
     req.session.destroy(err => {
         if (err) {
             console.log("=========== session.destroy error: ", err)
             req.session = null
             res.send('Error: sign out (session.destroy error)')
         } else {
-            res.redirect("/")
+            if (email === Constants.LIBRARIANEMAIL) res.redirect("/logout")
+            else res.redirect('/')
         }
     })
 })
