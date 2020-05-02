@@ -14,10 +14,10 @@ async function show_page_secured() {
 
     try {
         products = []
-        const snapshot = await firebase.firestore().collection(COLLECTION).get()
+        const snapshot = await firebase.firestore().collection(COLLECTION).orderBy("title").get()
         snapshot.forEach(doc => {
-            const { name, summary, price, image, image_url } = doc.data()
-            const p = { docId: doc.id, name, summary, price, image, image_url }
+            const { title, author, pub, summary, year, isbn, image, image_url } = doc.data()
+            const p = { docId: doc.id, title, author, pub, summary, year, isbn, image, image_url }
             products.push(p)
         })
     } catch (e) {
@@ -39,8 +39,8 @@ async function show_page_secured() {
         <div id="${p.docId}" class="card" style="width: 18rem; display: inline-block">
             <img src="${p.image_url}" class="card-img-top" style="height:18rem; object-fit: contain;">
             <div class="card-body">
-            <h5 class="card-title">${p.name}</h5>
-            <p class="card-text">${p.price}<br/>${p.summary}</p>
+            <h5 class="card-title">${p.title}</h5>
+            <p class="card-text">${p.author}<br/>${p.summary}</p>
             <button class="btn btn-primary" type="button"
                 onclick="editProduct(${index})">Edit</button>
             <button class="btn btn-danger" type="button"
@@ -60,17 +60,29 @@ function editProduct(index) {
     cardOriginal = card.innerHTML
     card.innerHTML = `
     <div class="form-group">
-        Name: <input class="form-control" type="text" id="name" value="${p.name}"/>
-        <p id="name_error" style="color:red" />
+        Title: <input class="form-control" type="text" id="title" value="${p.title}"/>
+        <p id="title_error" style="color:red" />
+    </div>
+    <div class="form-group">
+        Author: <input class="form-control" type="text" id="author" value="${p.author}"/>
+        <p id="author_error" style="color:red" />
+    </div>
+    <div class="form-group">
+        Publisher: <input class="form-control" type="text" id="pub" value="${p.pub}"/>
+        <p id="pub_error" style="color:red" />
     </div>
     <div class="form-group">
         Summary:<br>
-        <textarea class="form-control" id="summary" cols="40" rows="5">${p.summary}</textarea>
+        <textarea class="form-control" id="summary" cols="40" rows="4">${p.summary}</textarea>
         <p id="summary_error" style="color:red" />
     </div>
     <div class="form-group">
-        Price: <input class="form-control" type="number" id="price" value="${p.price}"/>
-        <p id="price_error" style="color:red" />
+        Year: <input class="form-control" type="number" id="year" value="${p.year}"/>
+        <p id="year_error" style="color:red" />
+    </div> 
+    <div class="form-group">
+        ISBN: <input class="form-control" type="number" id="isbn" value="${p.isbn}"/>
+        <p id="isbn_error" style="color:red" />
     </div>
     Current Image:<br>
     <img src="${p.image_url}"><br>
@@ -89,33 +101,55 @@ function editProduct(index) {
 
 async function update(index) {
     const p = products[index]
-    const newName = document.getElementById('name').value
+    const newTitle = document.getElementById('title').value
+    const newAuthor = document.getElementById('author').value
+    const newPub = document.getElementById('pub').value
     const newSummary = document.getElementById('summary').value
-    const newPrice = document.getElementById('price').value
+    const newYear = document.getElementById('year').value
+    const newISBN = document.getElementById('isbn').value
 
-    const nameErrorTag = document.getElementById('name_error')
+    const titleErrorTag = document.getElementById('title_error')
+    const authorErrorTag = document.getElementById('author_error')
+    const pubErrorTag = document.getElementById('pub_error')
     const summaryErrorTag = document.getElementById('summary_error')
-    const priceErrorTag = document.getElementById('price_error')
-    nameErrorTag.innerHTML = validate_name(newName)
+    const yearErrorTag = document.getElementById('year_error')
+    const isbnErrorTag = document.getElementById('isbn_error')
+    titleErrorTag.innerHTML = validate_title(newTitle)
+    authorErrorTag.innerHTML = validate_author(newAuthor)
+    pubErrorTag.innerHTML = validate_pub(newPub)
     summaryErrorTag.innerHTML = validate_summary(newSummary)
-    priceErrorTag.innerHTML = validate_price(newPrice)
+    yearErrorTag.innerHTML = validate_year(newYear)
+    isbnErrorTag.innerHTML = validate_isbn(newISBN)
 
-    if (nameErrorTag.innerHTML || summaryErrorTag.innerHTML || priceErrorTag.innerHTML) {
+    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || pubErrorTag.innerHTML || 
+        summaryErrorTag.innerHTML || yearErrorTag.innerHTML || isbnErrorTag.innerHTML) {
         return
     }
 
     let updated = false
     const newInfo = {}
-    if (p.name !== newName) {
-        newInfo.name = newName
+    if (p.title !== newTitle) {
+        newInfo.title = newTitle
+        updated = true
+    }
+    if (p.author !== newAuthor) {
+        newInfo.author = newAuthor
+        updated = true
+    }
+    if (p.pub !== newPub) {
+        newInfo.pub = newPub
         updated = true
     }
     if (p.summary !== newSummary) {
         newInfo.summary = newSummary
         updated = true
     }
-    if (p.price !== newPrice) {
-        newInfo.price = Number(Number(newPrice).toFixed(2))
+    if (p.year !== newYear) {
+        newInfo.year = Number(Number(newYear))
+        updated = true
+    }
+    if (p.isbn !== newISBN) {
+        newInfo.isbn= Number(Number(newISBN))
         updated = true
     }
     if (imageFile2Update) {
