@@ -14,10 +14,14 @@
 <body>
     <%- include('partials/nav.ejs', {page: 'shoppingcart', user}) %>
 
-    <h1>Shopping cart contents</h1>
+    <h1>Your list</h1>
+    <h6>All the books that you are interested in are here. You may borrow them, or get on the waitlist if they are not
+        currently available.</h6>
 
     <% if (message) {%>
-        <div style="color: red;"><h4><%= message %></h4></div>
+    <div style="color: red;">
+        <h4><%= message %></h4>
+    </div>
     <% } %>
 
     <table class="table">
@@ -44,8 +48,8 @@
                 <td>
                     <form action="/b/remove" method="post">
                         <input type="hidden" name="docId" value="<%= cart.contents[i].product.id %>">
-                        <td width="10%"><button type="submit" class="btn btn-primary">Remove</button></td>
-                    </form>
+                <td width="10%"><button type="submit" class="btn btn-primary">Remove</button></td>
+                </form>
                 </td>
             </tr>
             <% } %>
@@ -54,11 +58,11 @@
     <h2>TOTAL: <%= cart.getTotal().toFixed(2) %></h2>
 
     <% if (cart.contents.length>0) {%>
-        <div>
-            <form action="/b/checkout" method="post">
-                <button type="submit" class="btn btn-primary">Check out</button>
-            </form>
-        </div>
+    <div>
+        <form action="/b/checkout" method="post">
+            <button type="submit" class="btn btn-primary">Check out</button>
+        </form>
+    </div>
     <% } %>
 
     <%- include('partials/scripts.ejs')%>

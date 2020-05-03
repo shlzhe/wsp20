@@ -59,24 +59,24 @@ const adminUtil = require('./adminUtil.js')
 const Constants = require('./myconstants.js')
 
 app.get('/', auth, async (req, res) => {
-    const cartCount = req.session.cart ? req.session.cart.length : 0
+    const iCount = req.session.interested ? req.session.interested.length : 0
     const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
     try {
-        let products = []
+        let books = []
         const snapshot = await coll.orderBy("title").get()
         snapshot.forEach(doc => {
-            products.push({ id: doc.id, data: doc.data() })
+            books.push({ id: doc.id, data: doc.data() })
         })
         res.setHeader('Cache-Control', 'private')
-        res.render('storefront.ejs', { error: false, products, user: req.decodedIdToken, cartCount })
+        res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount })
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
-        res.render('storefront.ejs', { error: e, user: req.decodedIdToken, cartCount })
+        res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount })
     }
 })
 
 app.post('/b/book', auth, async (req, res) => {
-    const cartCount = req.session.cart ? req.session.cart.length : 0
+    const iCount = req.session.interested ? req.session.interested.length : 0
     const coll1 = firebase.firestore().collection(Constants.COLL_PRODUCTS)
     const coll2 = firebase.firestore().collection(Constants.COLL_ORDERS)
     const id = req.body.docId
@@ -99,28 +99,28 @@ app.post('/b/book', auth, async (req, res) => {
             })
         }
         res.setHeader('Cache-Control', 'private')
-        res.render('book.ejs', { product, times, qty, user: req.user, cartCount })
+        res.render('book.ejs', { product, times, qty, user: req.user, iCount })
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
-        res.render('storefront.ejs', { error: e, user: req.user, cartCount })
+        res.render('storefront.ejs', { error: e, user: req.user, iCount })
     }
 })
 
 app.get('/b/about', auth, (req, res) => {
-    const cartCount = req.session.cart ? req.session.cart.length : 0
+    const iCount = req.session.interested ? req.session.interested.length : 0
     res.setHeader('Cache-Control', 'private')
-    res.render('about.ejs', { user: req.decodedIdToken, cartCount })
+    res.render('about.ejs', { user: req.decodedIdToken, iCount })
 })
 
 app.get('/b/contact', auth, (req, res) => {
-    const cartCount = req.session.cart ? req.session.cart.length : 0
+    const iCount = req.session.interested ? req.session.interested.length : 0
     res.setHeader('Cache-Control', 'private')
-    res.render('contact.ejs', { user: req.decodedIdToken, cartCount })
+    res.render('contact.ejs', { user: req.decodedIdToken, iCount })
 })
 
 app.get('/b/signin', (req, res) => {
     res.setHeader('Cache-Control', 'private')
-    res.render('signin.ejs', { error: false, user: req.decodedIdToken, cartCount: 0 })
+    res.render('signin.ejs', { error: false, user: req.decodedIdToken, iCount: 0 })
 })
 
 app.post('/b/signin', async (req, res) => {
@@ -139,17 +139,17 @@ app.post('/b/signin', async (req, res) => {
             res.setHeader('Cache-Control', 'private')
             res.redirect('/admin/sysadmin')
         } else {*/
-        if (!req.session.cart) {
+        if (!req.session.interested) {
             res.setHeader('Cache-Control', 'private')
             res.redirect('/')
         } else {
             res.setHeader('Cache-Control', 'private')
-            res.redirect('/b/shoppingcart')
+            res.redirect('/b/interested')
         }
         //}
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
-        res.render('signin', { error: e, user: null, cartCount: 0 })
+        res.render('signin', { error: e, user: null, iCount: 0 })
     }
 })
 
@@ -170,95 +170,144 @@ app.get('/b/signout', async (req, res) => {
 })
 
 app.get('/b/profile', authAndRedirectSignIn, (req, res) => {
-    const cartCount = req.session.cart ? req.session.cart.length : 0
+    const iCount = req.session.interested ? req.session.interested.length : 0
     res.setHeader('Cache-Control', 'private')
-    res.render('profile', { user: req.decodedIdToken, cartCount, orders: false })
+    res.render('profile', { user: req.decodedIdToken, iCount, orders: false })
 })
 
 app.get('/b/signup', (req, res) => {
-    res.render('signup.ejs', { page: 'signup', user: null, error: false, cartCount: 0 })
+    res.render('signup.ejs', { page: 'signup', user: null, error: false, iCount: 0 })
 })
 
-const ShoppingCart = require('./model/ShoppingCart.js')
+const Interested = require('./model/Interested.js')
 
-app.post('/b/add2cart', async (req, res) => {
+app.post('/b/add2interested', async (req, res) => {
     const id = req.body.docId
-    const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
+    const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
     try {
         const doc = await collection.doc(id).get()
-        let cart
-        if (!req.session.cart) {
-            // first time add to cart
-            cart = new ShoppingCart()
+        let interested
+        if (!req.session.interested) {
+            // first time add to list
+            interested = new Interested()
         } else {
-            cart = ShoppingCart.deserialize(req.session.cart)
+            interested = Interested.deserialize(req.session.interested)
         }
-        const { name, price, summary, image, image_url } = doc.data()
-        cart.add({ id, name, price, summary, image, image_url })
-        req.session.cart = cart.serialize()
+        const { title, author, publisher, summary, year, isbn, image, image_url } = doc.data()
+        interested.add({ id, title, author, publisher, summary, year, isbn, image, image_url })
+        req.session.interested = interested.serialize()
         res.setHeader('Cache-Control', 'private')
-        res.redirect('/b/shoppingcart')
+        res.redirect('/')
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.send(JSON.stringify(e))
     }
 })
 
-app.get('/b/shoppingcart', authAndRedirectSignIn, (req, res) => {
-    let cart
-    if (!req.session.cart) {
-        cart = new ShoppingCart()
+app.get('/b/interested', authAndRedirectSignIn, (req, res) => {
+    let interested
+    if (!req.session.interested) {
+        interested = new Interested()
     } else {
-        cart = ShoppingCart.deserialize(req.session.cart)
+        interested = Interested.deserialize(req.session.interested)
     }
     res.setHeader('Cache-Control', 'private')
-    res.render('shoppingcart.ejs', { message: false, cart, user: req.decodedIdToken, cartCount: cart.contents.length })
+    res.render('interested.ejs', {
+        message: false, interested, user: req.decodedIdToken,
+        iCount: interested.contents.length
+    })
 })
 
-app.post('/b/remove', async (req, res) => {
-    const id = req.body.docId
-    const collection = firebase.firestore().collection(Constants.COLL_PRODUCTS)
-    try {
-        let cart = ShoppingCart.deserialize(req.session.cart)
-        cart.remove(id)
-        req.session.cart = cart.serialize()
+app.post('/b/saveinterested', authAndRedirectSignIn, async (req, res) => {
+    if (!req.session.interested) {
         res.setHeader('Cache-Control', 'private')
-        res.redirect('/b/shoppingcart')
-    } catch (e) {
-        res.setHeader('Cache-Control', 'private')
-        res.send(JSON.stringify(e))
-    }
-})
-
-app.post('/b/checkout', authAndRedirectSignIn, async (req, res) => {
-    if (!req.session.cart) {
-        res.setHeader('Cache-Control', 'private')
-        return res.send('Shopping Cart is Empty!')
+        return res.send('There is nothing on the Interested list!')
     }
 
     // data format to store in firestore
     // collection: orders
-    // {uid, timestamp, cart}
-    // cart = [{product, qty} ...] // contents in shoppingcart
+    // {uid, timestamp, interested}
+    // interested = [{ ...}] // contents in interested
 
     const data = {
         uid: req.decodedIdToken.uid,
-        // timestamp: firebase.firestore.Timestamp.fromDate(new Date()),
-        cart: req.session.cart
+        interested: req.session.interested
     }
 
     try {
-        await adminUtil.checkOut(data)
+        await adminUtil.saveInterested(data)
         req.session.cart = null
         res.setHeader('Cache-Control', 'private')
-        return res.render('shoppingcart.ejs',
-            { message: 'Checked Out Successfully', cart: new ShoppingCart(), user: req.decodedIdToken, cartCount: 0 })
+        return res.render('interested.ejs',
+            { message: 'Saved Successfully', interested, user: req.decodedIdToken, iCount: interested.contents.length })
     } catch (e) {
-        const cart = ShoppingCart.deserialize(req.session.cart)
+        const interested = Interested.deserialize(req.session.interested)
         res.setHeader('Cache-Control', 'private')
-        return res.render('shoppingcart.ejs',
-            { message: 'Checked Out Failed. Try Again Later!', cart, user: req.decodedIdToken, cartCount: cart.contents.length }
+        return res.render('interested.ejs',
+            { message: 'Failed to save changes. Try Again Later!', interested, user: req.decodedIdToken, iCount: interested.contents.length }
         )
+    }
+})
+
+app.post('/b/remove', async (req, res) => {
+    const id = req.body.docId
+    //const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
+    try {
+        let interested = Interested.deserialize(req.session.interested)
+        interested.remove(id)
+        req.session.interested = interested.serialize()
+        res.setHeader('Cache-Control', 'private')
+        res.redirect('/b/interested')
+    } catch (e) {
+        res.setHeader('Cache-Control', 'private')
+        console.log("===================" + e)
+        res.send(JSON.stringify(e))
+    }
+})
+
+app.post('/b/borrow', authAndRedirectSignIn, async (req, res) => {
+    // change field in books
+    // add to borrow collection
+    // remove from interested
+    const id = req.body.bookId
+    const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
+    //const book = await collection.doc(id).get()
+    try {
+        const data = {
+            uid: req.decodedIdToken.uid,
+            id
+        }
+        await adminUtil.borrow(id, data)
+        let interested = Interested.deserialize(req.session.interested)
+        interested.remove(id)
+        res.setHeader('Cache-Control', 'private')
+        return res.render('interested.ejs',
+            { message: 'Borrowed Successfully', interested, user: req.decodedIdToken, iCount: 0 })
+    } catch (e) {
+        const interested = Interested.deserialize(req.session.interested)
+        res.setHeader('Cache-Control', 'private')
+        return res.render('interested.ejs',
+            { message: 'Borrow Failed. Try Again Later!', interested, user: req.decodedIdToken, iCount: interested.contents.length }
+        )
+    }
+})
+
+app.get('/b/borrowed', authAndRedirectSignIn, async (req, res) => {
+    const iCount = req.session.interested ? req.session.interested.length : 0
+    let borrowed = []
+    try {
+        const bb = await adminUtil.getBorrowed(req.decodedIdToken)
+        const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
+        bb.forEach(async (b) => {
+            const doc = await collection.doc(b.id).get()
+            console.log(doc.data().title)
+            borrowed.push({ book: doc.data() })
+        })
+        res.setHeader('Cache-Control', 'private')
+        res.render('borrowed.ejs', { message: false, borrowed, user: req.decodedIdToken, iCount })
+    } catch (e) {
+        res.setHeader('Cache-Control', 'private')
+        res.send('<h1>Borrowed List Error</h1>' + e)
     }
 })
 
@@ -266,7 +315,7 @@ app.get('/b/orderhistory', authAndRedirectSignIn, async (req, res) => {
     try {
         const orders = await adminUtil.getOrderHistory(req.decodedIdToken)
         res.setHeader('Cache-Control', 'private')
-        res.render('profile.ejs', { user: req.decodedIdToken, cartCount: 0, orders })
+        res.render('profile.ejs', { user: req.decodedIdToken, iCount: 0, orders })
     } catch (e) {
         console.log('======', e)
         res.setHeader('Cache-Control', 'private')

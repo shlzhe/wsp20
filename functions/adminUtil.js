@@ -45,27 +45,68 @@ async function verifyIdToken(idToken) {
     }
 }
 
-async function getOrderHistory(decodedIdToken) {
+async function getInterested(decodedIdToken) {
     try {
-        const collection = admin.firestore().collection(Constants.COLL_ORDERS)
-        let orders = []
+        const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
+        let interested = []
         const snapshot = await collection.where("uid", "==", decodedIdToken.uid).orderBy("timestamp").get()
         snapshot.forEach(doc => {
-            orders.push(doc.data())
+            interested.push(doc.data())
         })
-        return orders
+        return interested
     } catch (e) {
         return null
     }
 }
 
-async function checkOut(data) {
+async function saveInterested(data) {
     data.timestamp = admin.firestore.Timestamp.fromDate(new Date())
     try {
-        const collection = admin.firestore().collection(Constants.COLL_ORDERS)
+        const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
         await collection.doc().set(data)
     } catch (e) {
         throw e
+    }
+}
+
+
+async function borrow(id, data) {
+    const tdate = new Date()
+    data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
+    data.duedate = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 2))
+
+    try {
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        await books.doc(id).update({ status: Constants.STATUS_UNAVAILABLE })
+
+        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
+        await collection.doc().set(data)
+    } catch (e) {
+        throw e
+    }
+}
+
+async function unborrow(data) {
+    data.timestamp = admin.firestore.Timestamp.fromDate(new Date())
+    try {
+        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
+        await collection.doc().delete(data)
+    } catch (e) {
+        throw e
+    }
+}
+
+async function getBorrowed(decodedIdToken) {
+    try {
+        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
+        let borrowed = []
+        const snapshot = await collection.where("uid", "==", decodedIdToken.uid).orderBy("timestamp").get()
+        snapshot.forEach(doc => {
+            borrowed.push(doc.data())
+        })
+        return borrowed
+    } catch (e) {
+        return null
     }
 }
 
@@ -73,6 +114,9 @@ module.exports = {
     createUser,
     listUsers,
     verifyIdToken,
-    getOrderHistory,
-    checkOut
+    saveInterested,
+    getInterested,
+    borrow,
+    unborrow,
+    getBorrowed
 }

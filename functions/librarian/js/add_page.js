@@ -20,8 +20,8 @@ function add_page_secured() {
         </div>
 
         <div class="form-group">
-            Publisher<input class="form-control" type="text" id="pub" ></>
-            <p id="pub_error" style="color:red" />
+            Publisher<input class="form-control" type="text" id="publisher" ></>
+            <p id="publisher_error" style="color:red" />
         </div>
 
         <div class="form-group">
@@ -55,19 +55,21 @@ function add_page_secured() {
     })
 }
 
+const Constants = require('../../myconstants.js')
+
 async function addBook() {
 
-    const status = 0;
+    const status = Constants.STATUS_AVAILABLE
     const title = document.getElementById('title').value
     const author = document.getElementById('author').value
-    const pub = document.getElementById('pub').value
+    const publisher = document.getElementById('publisher').value
     const summary = document.getElementById('summary').value
     let year = document.getElementById('year').value
     let isbn = document.getElementById('isbn').value
 
     const titleErrorTag = document.getElementById('title_error')
     const authorErrorTag = document.getElementById('author_error')
-    const pubErrorTag = document.getElementById('pub_error')
+    const publisherErrorTag = document.getElementById('publisher_error')
     const summaryErrorTag = document.getElementById('summary_error')
     const yearErrorTag = document.getElementById('year_error')
     const isbnErrorTag = document.getElementById('isbn_error')
@@ -75,13 +77,13 @@ async function addBook() {
 
     titleErrorTag.innerHTML = validate_title(title)
     authorErrorTag.innerHTML = validate_author(author)
-    pubErrorTag.innerHTML = validate_pub(pub)
+    publisherErrorTag.innerHTML = validate_publisher(publisher)
     summaryErrorTag.innerHTML = validate_summary(summary)
     yearErrorTag.innerHTML = validate_year(year)
     isbnErrorTag.innerHTML = validate_isbn(isbn)
     imageErrorTag.innerHTML = !glImageFile2Add ? 'Error: No image selected' : null
 
-    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || pubErrorTag.innerHTML || 
+    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || publisherErrorTag.innerHTML || 
         summaryErrorTag.innerHTML || yearErrorTag.innerHTML || isbnErrorTag.innerHTML || 
         imageErrorTag.innerHTML) {
         return
@@ -96,7 +98,7 @@ async function addBook() {
         year = Number(year)
         isbn = Number(isbn)
 
-        await firebase.firestore().collection(COLLECTION).doc().set({ status, title, author, pub, summary, year, isbn, image, image_url })
+        await firebase.firestore().collection(COLLECTION).doc().set({ status, title, author, publisher, summary, year, isbn, image, image_url })
 
         glPageContent.innerHTML = `
             <h1>${title} has been added!</h1>
