@@ -26,9 +26,13 @@
                 <a class="nav-link" href="/b/signout">Sign Out</a>
             </li>
             <% } %>
-            <li class="nav-item <%= page === 'shoppingcart' ? ' active' : ''%>">
-                <a class="nav-link" href="/b/shoppingcart">
-                    ShoppingCart<%= cartCount > 0 ? `(${cartCount})` : ''%></a>
+            <li class="nav-item <%= page === 'interested' ? ' active' : ''%>">
+                <a class="nav-link" href="/b/interested">
+                    Interested<%= iCount > 0 ? `(${iCount})` : ''%></a>
+            </li>
+            <li class="nav-item <%= page === 'borrowed' ? ' active' : ''%>">
+                <a class="nav-link" href="/b/borrowed">
+                    Borrowed<%= iCount > 0 ? `(${iCount})` : ''%></a>
             </li>
             <% if(user && (user.email === 'prodadmin@test.com' || user.email === 'sysadmin@test.com')) { %>
             <li class="nav-item">
@@ -57,3 +61,6 @@
         aria-label="Search">
     <button class="btn btn-primary" type="button" onclick="searchProduct()">Search</button>
 </nav>
+</nav>
+
+<div class="contain" style="padding: 0.5%; align-items: center;">

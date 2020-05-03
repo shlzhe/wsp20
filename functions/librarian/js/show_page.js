@@ -16,8 +16,8 @@ async function show_page_secured() {
         products = []
         const snapshot = await firebase.firestore().collection(COLLECTION).orderBy("title").get()
         snapshot.forEach(doc => {
-            const { title, author, pub, summary, year, isbn, image, image_url } = doc.data()
-            const p = { docId: doc.id, title, author, pub, summary, year, isbn, image, image_url }
+            const { title, author, publisher, summary, year, isbn, image, image_url } = doc.data()
+            const p = { docId: doc.id, title, author, publisher, summary, year, isbn, image, image_url }
             products.push(p)
         })
     } catch (e) {
@@ -68,8 +68,8 @@ function editProduct(index) {
         <p id="author_error" style="color:red" />
     </div>
     <div class="form-group">
-        Publisher: <input class="form-control" type="text" id="pub" value="${p.pub}"/>
-        <p id="pub_error" style="color:red" />
+        Publisher: <input class="form-control" type="text" id="publisher" value="${p.publisher}"/>
+        <p id="publisher_error" style="color:red" />
     </div>
     <div class="form-group">
         Summary:<br>
@@ -103,25 +103,25 @@ async function update(index) {
     const p = products[index]
     const newTitle = document.getElementById('title').value
     const newAuthor = document.getElementById('author').value
-    const newPub = document.getElementById('pub').value
+    const newPublisher = document.getElementById('publisher').value
     const newSummary = document.getElementById('summary').value
     const newYear = document.getElementById('year').value
     const newISBN = document.getElementById('isbn').value
 
     const titleErrorTag = document.getElementById('title_error')
     const authorErrorTag = document.getElementById('author_error')
-    const pubErrorTag = document.getElementById('pub_error')
+    const publisherErrorTag = document.getElementById('publisher_error')
     const summaryErrorTag = document.getElementById('summary_error')
     const yearErrorTag = document.getElementById('year_error')
     const isbnErrorTag = document.getElementById('isbn_error')
     titleErrorTag.innerHTML = validate_title(newTitle)
     authorErrorTag.innerHTML = validate_author(newAuthor)
-    pubErrorTag.innerHTML = validate_pub(newPub)
+    publisherErrorTag.innerHTML = validate_publisher(newPublisher)
     summaryErrorTag.innerHTML = validate_summary(newSummary)
     yearErrorTag.innerHTML = validate_year(newYear)
     isbnErrorTag.innerHTML = validate_isbn(newISBN)
 
-    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || pubErrorTag.innerHTML || 
+    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || publisherErrorTag.innerHTML || 
         summaryErrorTag.innerHTML || yearErrorTag.innerHTML || isbnErrorTag.innerHTML) {
         return
     }
@@ -136,8 +136,8 @@ async function update(index) {
         newInfo.author = newAuthor
         updated = true
     }
-    if (p.pub !== newPub) {
-        newInfo.pub = newPub
+    if (p.publisher !== newPublisher) {
+        newInfo.publisher = newPublisher
         updated = true
     }
     if (p.summary !== newSummary) {
