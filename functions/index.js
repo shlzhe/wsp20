@@ -322,6 +322,111 @@ app.get('/b/orderhistory', authAndRedirectSignIn, async (req, res) => {
     }
 })
 
+app.post('/b/sortBy', auth, async (req, res) => {
+    const sortBy = req.body.sortBy
+    const order = req.body.order;
+    const iCount = req.session.interested ? req.session.interested.length : 0
+    const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
+    try {
+        let books = []
+        const snapshot = await coll.orderBy(sortBy, order).get()
+        snapshot.forEach(doc => {
+            books.push({ id: doc.id, data: doc.data() })
+        })
+        res.setHeader('Cache-Control', 'private')
+        res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount })
+    } catch (e) {
+        res.setHeader('Cache-Control', 'private')
+        res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount })
+    }
+})
+
+app.post('/b/search', auth, async (req, res) => {
+    const search = req.body.textBoxSearch
+    const iCount = req.session.interested ? req.session.interested.length : 0
+    const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
+
+    try {
+        let books = []
+        console.log("search: ================", search)
+        const snapshot = await coll.where("title", '==', search).get()
+        snapshot.forEach(doc => {
+            books.push({ id: doc.id, data: doc.data() })
+            // console.log('============', books)
+        })
+        // console.log('============books[]', books)
+        res.setHeader('Cache-Control', 'private')
+        res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount })
+    } catch (e) {
+        console.log('++++++++++=', e)
+        res.setHeader('Cache-Control', 'private')
+        res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount })
+    }
+})
+
+app.post('/b/textBoxSearch', auth, async (req, res) => {
+    try {
+        // document.addEventListener('DOMContentLoaded', async function() {
+            const db = firebase.firestore();
+    
+            const searchByName = async ({
+              search = '',
+              limit = 50,
+              lastNameOfLastPerson = ''
+            } = {}) => {
+              const snapshot = await db.collection('people')
+                .where('keywords', 'array-contains', search.toLowerCase())
+                .orderBy('name.last')
+                .startAfter(lastNameOfLastPerson)
+                .limit(limit)
+                .get();
+              return snapshot.docs.reduce((acc, doc) => {
+                const name = doc.data().name;
+                return acc.concat(`
+                  <tr>
+                    <td>${name.last}</td>
+                    <td>${name.first}</td>
+                    <td>${name.middle}</td>
+                    <td>${name.suffix}</td>
+                  </tr>`);
+              }, '');
+            };
+    
+            // const textBoxSearch = document.querySelector('#textBoxSearch');
+            const textBoxSearch = req.body.textBoxSearch;
+            
+
+
+    
+            const rowsPeople = document.querySelector('#rowsPeople');
+            rowsPeople.innerHTML = await searchByName();
+    
+            textBoxSearch.addEventListener('keyup', async (e) => rowsPeople.innerHTML = await searchByName({search: e.target.value}));
+    
+            async function lazyLoad() {
+              const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) === window.scrollY; 
+              if (scrollIsAtTheBottom) {
+                const lastNameOfLastPerson = rowsPeople.lastChild.firstElementChild.textContent;
+    
+                rowsPeople.innerHTML += await searchByName({
+                  search: textBoxSearch.value,
+                  lastNameOfLastPerson: lastNameOfLastPerson
+                });
+              }
+            }
+            window.addEventListener('scroll', lazyLoad);
+        //   });
+    }
+    catch(e) {
+        console.log('++++++++============+=', textBoxSearch)
+        console.log('++++++++++=', e)
+
+    }
+
+})
+
+
+
 //middleware
 async function authAndRedirectSignIn(req, res, next) {
     try {

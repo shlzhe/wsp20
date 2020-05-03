@@ -44,22 +44,47 @@
                 <a class="nav-link" href="/admin/sysadmin">SysAdmin</a>
             </li>
             <% } %>
+            <% if(page === 'storefront') { %>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Options
+                <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    Sort By
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAZ()">Sort By (A-Z)</button>
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByZA()">Sort By (Z-A)</button>
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAuthorUp()">Sort By Author(A-Z)</button>
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAuthorDown()">Sort By Author(Z-A)</button>
+                    <form action="/b/sortBy" method="post" style="display:inline">
+                        <input type="hidden" name="sortBy" value="title">
+                        <input type="hidden" name="order" value="asc">
+                        <button type="submit" class="btn btn-primary-outline">Title (A-Z)</button>
+                    </form>
+                    <form action="/b/sortBy" method="post" style="display:inline">
+                        <input type="hidden" name="sortBy" value="title">
+                        <input type="hidden" name="order" value="desc">
+                        <button type="submit" class="btn btn-primary-outline">Title(Z-A)</button>
+                    </form>
+                    <form action="/b/sortBy" method="post" style="display:inline">
+                        <input type="hidden" name="sortBy" value="author">
+                        <input type="hidden" name="order" value="asc">
+                        <button type="submit" class="btn btn-primary-outline">Author(A-Z)</button>
+                    </form>
+                    <form action="/b/sortBy" method="post" style="display:inline">
+                        <input type="hidden" name="sortBy" value="author">
+                        <input type="hidden" name="order" value="desc">
+                        <button type="submit" class="btn btn-primary-outline">Author(Z-A)</button>
+                    </form>
                 </div>
             </li>
+            <li>
+                <form action="/b/textBoxSearch" method="post">
+                    <input class="form-control form-control-sm" type="text" name="textBoxSearch" placeholder="Looking for something?"aria-label="Search" style="display:inline-block">
+                    <button type="submit" class="btn btn-primary-outline">Search</button>
+                </form>    
+            </li>
+            <% } %>
         </ul>
     </div>
-    <input class="form-control form-control-sm w-25" type="text" id="search" placeholder="Search"
-        aria-label="Search">
-    <button class="btn btn-primary" type="button" onclick="searchProduct()">Search</button>
+
+
+    <!-- <button class="btn btn-primary" type="button" onclick="searchProduct()">Search</button> -->
 </nav>
 </nav>
 

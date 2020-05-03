@@ -16,6 +16,14 @@
 
     <h1>Library</h1>
 
+    <!-- <form action="/b/search" method="post"> -->
+        <div class="container">
+            <input class="input" type="text" name="textBoxSearch" id="textBoxSearch" placeholder="Search" />
+            <br /><br />
+        </div>
+    <!-- </form> -->
+
+
     <% if(error) {%>
     <p style="color: red"><%= JSON.stringify(error)%></p>
 
@@ -31,7 +39,7 @@
             <div class=" col-md-8">
                 <div class="card-body">
                     <h5 class="card-title"><%= b.data.title %></h5>
-                    <p class="card-text"><%= b.data.summary %></p>
+                    <p class="card-text"><%= b.data.author %><br><%= b.data.summary %></p>
                     <form action="/b/book" method="post" style="display:inline">
                         <input type="hidden" name="docId" value="<%= b.id %>">
                         <button type="submit" class="btn btn-primary">Details</button>
@@ -47,6 +55,65 @@
 
     <% } %>
     <% } %>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
+            console.log('textBoxSearch ==========', textBoxSearch)
+
+            try {
+                const searchByName = async ({
+                    search = '',
+                    limit = 50,
+                    lastNameOfLastPerson = ''
+                } = {}) => {
+                    const snapshot = await coll
+                        .where('title', 'array-contains', search.toLowerCase())
+                        //   .orderBy('name.last')
+                        //   .startAfter(lastNameOfLastPerson)
+                        //   .limit(limit)
+                        .get();
+                    return snapshot.docs.reduce((acc, doc) => {
+                        const name = doc.data().name;
+                        return acc.concat(`
+                <tr>
+                  <td>${name.last}</td>
+                  <td>${name.first}</td>
+                  <td>${name.middle}</td>
+                  <td>${name.suffix}</td>
+                </tr>`);
+                        console.log('return===================')
+                    }, '');
+                };
+
+                const textBoxSearch = document.querySelector('#textBoxSearch');
+                console.log('textBoxSearch ==========', textBoxSearch);
+
+                const rowsPeople = document.querySelector('#rowsPeople');
+                rowsPeople.innerHTML = await searchByName();
+
+                textBoxSearch.addEventListener('keyup', async (e) => rowsPeople.innerHTML = await searchByName({ search: e.target.value }));
+
+                //   async function lazyLoad() {
+                //     const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) === window.scrollY; 
+                //     if (scrollIsAtTheBottom) {
+                //       const lastNameOfLastPerson = rowsPeople.lastChild.firstElementChild.textContent;
+
+                //       rowsPeople.innerHTML += await searchByName({
+                //         search: textBoxSearch.value,
+                //         lastNameOfLastPerson: lastNameOfLastPerson
+                //       });
+                //     }
+                //   }
+                //   window.addEventListener('scroll', lazyLoad);
+            }
+            catch (e) {
+                console.log('1234567=================', e)
+                console.log('textboxsearchhhhhhh=========', textBoxSearch)
+            }
+
+        });
+    </script>
 
     <%- include('partials/scripts.ejs')%>
 </body>
