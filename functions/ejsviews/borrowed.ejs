@@ -29,24 +29,19 @@
                 <th scope="col">Title</th>
                 <th scope="col">Author</th>
                 <th scope="col">Publisher</th>
-                <th scope="col">Summary</th>
                 <th scope="col">Year</th>
                 <th scope="col">ISBN</th>
                 <th scope="col">Actions</th>
                 <th scope="col"></th>
             </tr>
         </thead>
-        <h1>testing <% borrowed.length %></h1>
-
         <tbody>
             <% for(let i=0; i < borrowed.length; i++) {%>
-                <h1>testing <% borrowed.length %></h1>
             <tr>
                 <th scope="row"><img height=50 src="<%= borrowed[i].book.image_url%>"></th>
                 <td><%= borrowed[i].book.title%></td>
                 <td><%= borrowed[i].book.author%></td>
                 <td><%= borrowed[i].book.publisher%></td>
-                <td width="30%"><%= borrowed[i].book.summary%></td>
                 <td><%= borrowed[i].book.year%></td>
                 <td><%= borrowed[i].book.isbn%></td>
                 <td width="15%">
