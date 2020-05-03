@@ -296,13 +296,12 @@ app.get('/b/borrowed', authAndRedirectSignIn, async (req, res) => {
     const iCount = req.session.interested ? req.session.interested.length : 0
     let borrowed = []
     try {
-        const bb = await adminUtil.getBorrowed(req.decodedIdToken)
+        const b = await adminUtil.getBorrowed(req.decodedIdToken)
         const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
-        bb.forEach(async (b) => {
-            const doc = await collection.doc(b.id).get()
-            console.log(doc.data().title)
+        for (let i = 0; i < b.length; i++) {
+            const doc = await collection.doc(b[i].id).get()
             borrowed.push({ book: doc.data() })
-        })
+        }
         res.setHeader('Cache-Control', 'private')
         res.render('borrowed.ejs', { message: false, borrowed, user: req.decodedIdToken, iCount })
     } catch (e) {
