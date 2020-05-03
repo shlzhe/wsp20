@@ -1,4 +1,6 @@
 var admin = require("firebase-admin");
+const functions = require('firebase-functions');
+const nodemailer = require('nodemailer');
 
 var serviceAccount = require("./renjianl-wsp20-firebase-adminsdk-hoq0l-85a8204f99.json");
 
@@ -7,6 +9,37 @@ admin.initializeApp({
     databaseURL: "https://renjianl-wsp20.firebaseio.com"
 });
 
+// var transporter = nodemailer.createTransport({
+//     host: 'smtp.sendgrid.net',
+//     port: 465,
+//     secure: true,
+//     auth: {
+//         user: 'apikey',
+//         pass: 'asdasd123'
+//     }
+// });
+
+// exports.sendEmail = functions.firestore
+//     .document('orders/{orderId}')
+//     .onCreate((snap, context) => {
+
+// });
+
+// const mailOptions = {
+//     from: `softauthor1@gmail.com`,
+//     to: snap.data().email,
+//     subject: 'contact form message',
+//     html: `<h1>Order Confirmation</h1>
+//      <p> <b>Email: </b>${snap.data().email} </p>`
+// };
+
+// return transporter.sendMail(mailOptions, (error, data) => {
+//     if (error) {
+//         console.log(error)
+//         return
+//     }
+//     console.log("Sent!")
+// });
 const Constants = require('./myconstants.js')
 
 async function createUser(req, res) {

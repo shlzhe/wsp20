@@ -40,6 +40,20 @@
                 <a class="nav-link" href="/admin/sysadmin">SysAdmin</a>
             </li>
             <% } %>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Options
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAZ()">Sort By (A-Z)</button>
+                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByZA()">Sort By (Z-A)</button>
+                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAuthorUp()">Sort By Author(A-Z)</button>
+                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAuthorDown()">Sort By Author(Z-A)</button>
+                </div>
+            </li>
         </ul>
     </div>
+    <input class="form-control form-control-sm w-25" type="text" id="search" placeholder="Search"
+        aria-label="Search">
+    <button class="btn btn-primary" type="button" onclick="searchProduct()">Search</button>
 </nav>
