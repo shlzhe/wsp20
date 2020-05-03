@@ -8,8 +8,8 @@ function validate_author(author) {
     else return null
 }
 
-function validate_pub(pub) {
-    if (!pub || pub.length < 4) return 'Error: min 4 chars'
+function validate_publisher(publisher) {
+    if (!publisher || publisher.length < 4) return 'Error: min 4 chars'
     else return null
 }
 

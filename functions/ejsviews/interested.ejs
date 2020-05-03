@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <%- include('partials/header.ejs')%>
+
+    <title>Interested</title>
+</head>
+
+<body>
+    <%- include('partials/nav.ejs', {page: 'interested', user}) %>
+
+    <h1>Your Interested List</h1>
+    <h6>All the books that you are interested in are here. You may borrow them, or get on the waitlist if they are not
+        currently available.</h6>
+
+    <% if (message) {%>
+    <div style="color: red;">
+        <h4><%= message %></h4>
+    </div>
+    <% } %>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Image</th>
+                <th scope="col">Title</th>
+                <th scope="col">Author</th>
+                <th scope="col">Publisher</th>
+                <th scope="col">Year</th>
+                <th scope="col">ISBN</th>
+                <th scope="col">Actions</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(let i=0; i < interested.contents.length; i++) {%>
+            <tr>
+                <th scope="row"><img height=50 src="<%= interested.contents[i].book.image_url%>"></th>
+                <td><%= interested.contents[i].book.title%></td>
+                <td><%= interested.contents[i].book.author%></td>
+                <td><%= interested.contents[i].book.publisher%></td>
+                <td><%= interested.contents[i].book.year%></td>
+                <td><%= interested.contents[i].book.isbn%></td>
+                <td width="15%">
+                    <form action="/b/borrow" method="post" style="display: inline-block;">
+                        <input type="hidden" name="bookId" value="<%= interested.contents[i].book.id %>">
+                        <button type="submit" class="btn btn-primary">Borrow</button>
+                    </form>
+                    <form action="/b/remove" method="post" style="display: inline-block;">
+                        <input type="hidden" name="docId" value="<%= interested.contents[i].book.id %>">
+                        <button type="submit" class="btn btn-primary">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <% if (interested.contents.length>0) {%>
+    <br><br>
+    <h4>All your changes will be gone when you leave! Click here to save your interested list:
+        <form action="/b/saveinterested" method="post" style="display:inline">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </h4>
+
+    <% } %>
+
+    <%- include('partials/scripts.ejs')%>
+</body>
+
+</html>

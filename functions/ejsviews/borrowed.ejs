@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <%- include('partials/header.ejs')%>
+
+    <title>Borrowed</title>
+</head>
+
+<body>
+    <%- include('partials/nav.ejs', {page: 'borrowed', user}) %>
+
+    <h1>Books you have borrowed</h1>
+    <h6>You have borrowed these books; please make sure to return them by the due date. </h6>
+    <% if (message) {%>
+    <div style="color: red;">
+        <h4><%= message %></h4>
+    </div>
+    <% } %>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Image</th>
+                <th scope="col">Title</th>
+                <th scope="col">Author</th>
+                <th scope="col">Publisher</th>
+                <th scope="col">Year</th>
+                <th scope="col">ISBN</th>
+                <th scope="col">Actions</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(let i=0; i < borrowed.length; i++) {%>
+            <tr>
+                <th scope="row"><img height=50 src="<%= borrowed[i].book.image_url%>"></th>
+                <td><%= borrowed[i].book.title%></td>
+                <td><%= borrowed[i].book.author%></td>
+                <td><%= borrowed[i].book.publisher%></td>
+                <td><%= borrowed[i].book.year%></td>
+                <td><%= borrowed[i].book.isbn%></td>
+                <td width="15%">
+                    <form action="/b/return" method="post" style="display: inline-block;">
+                        <input type="hidden" name="docId" value="<%= borrowed[i].book.id %>">
+                        <button type="submit" class="btn btn-primary">Return</button>
+                    </form>
+                </td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <% if (borrowed.length>0) {%>
+    <br><br>
+    <h4>All your changes will be gone when you leave! Click here to save your borrowed list:
+        <form action="/b/saveborrowed" method="post" style="display:inline">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </h4>
+
+    <% } %>
+
+    <%- include('partials/scripts.ejs')%>
+</body>
+
+</html>
