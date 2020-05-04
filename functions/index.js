@@ -369,6 +369,10 @@ app.post('/b/borrow', authAndRedirectSignIn, async (req, res) => {
 
 app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
     const bookId = req.body.bookId
+    const title = req.body.title
+    const tdate = new Date()
+    const date = firebase.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate())).toDate()
+    const msg = req.body.msg
     const interestedId = req.body.interestedId
     try {
         const data = {
@@ -376,6 +380,8 @@ app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
             bookId
         }
         await adminUtil.borrow(bookId, data)
+        console.log('+=++_+_+_+_+_+_+_+', date)
+        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, date)
         await adminUtil.uninterested(interestedId)
         res.setHeader('Cache-Control', 'private')
         res.redirect('/b/borrowed')
@@ -415,14 +421,21 @@ app.post('/b/return', authAndRedirectSignIn, async (req, res) => {
 app.post('/b/confirmreturn', authAndRedirectSignIn, async (req, res) => {
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
+    const tdate = new Date()
+    const date = firebase.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 4)).toDate()
+    const msg = req.body.msg    
+    const title = req.body.title
     const bookId = req.body.bookId
     const borrowId = req.body.borrowId
     let borrowed = []
     try {
+        console.log('+=++_+_+_+_+_+_+_+', msg)
         await adminUtil.unborrow(bookId, borrowId)
+        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, date)
         res.setHeader('Cache-Control', 'private')
         res.redirect('/b/borrowed')
     } catch (e) {
+        console.log('++++++++++++++++++++', e)
         res.setHeader('Cache-Control', 'private')
         return res.render('borrowed.ejs',
             { message: 'Return Failed. Try Again Later!', borrowed, user: req.decodedIdToken, iCount, bCount }
