@@ -59,6 +59,13 @@
         <form action="/b/confirmreturn" method="post" style="display:inline">
             <input type="hidden" name="bookId" value="<%= b.bookId %>">
             <input type="hidden" name="borrowId" value="<%= b.borrowId %>">
+            <input type="hidden" name="title" value="<%= b.data.title%>">
+            <% if(b.difference > 0) { %>
+                <input type="hidden" name="msg" value="returnlate">
+            <% } else { %>
+                <input type="hidden" name="msg" value="return">
+            <% } %>
+
             <button type="submit" class="btn btn-primary">Confirm Return</button>
         </form>
         <form action="/b/borrowed" method="get" style="display:inline">

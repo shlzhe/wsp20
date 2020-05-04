@@ -17,23 +17,57 @@ var transporter = nodemailer.createTransport({
     }
 });
 
-function sendEmail(to) {
+function sendEmail(to, msg, title, date) {
 
-    const mailOptions = {
+    var mailOptions = {
         from: `no-reply@wsp20.com`,
         to,
-        subject: 'Test message',
-        html: `<h1>Order Confirmation</h1>
-         <p> <b>Email: </b>${to} </p>`
+        subject: '',
+        html: ``,
     };
-    
+
+    if(msg === "return") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'Book Return Confirmation',
+            html: `
+                <h2>You have successfully returned on ${date}</h2><br>
+                <h4> ${title} </h4>`
+        };
+    }
+
+    else if(msg === "returnlate") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'LATE- Book Return Confirmation',
+            html: `
+                <h2>You have returned your book late on ${date}</h2><br>
+                <h3>You have been charged $ to your account</h3>
+                <h4> ${title} </h4>`
+        };
+    }
+
+    else if(msg === "borrow") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'Your Borrowed Books',
+            html: `
+                <h4>${date}</h4>
+                <h2>This email is to show that you have successfully borrowed: </h2><br>
+                <h4> ${title} </h4>`
+        };
+    }
+
     return transporter.sendMail(mailOptions, (error, data) => {
         if (error) {
             console.log("======================", error)
             return
         }
         var data = JSON.stringify(data)
-        return res.send(`Sent! ${data}`);
+        return res.send(`Email Sent! ${data}`);
     });
 }
 
