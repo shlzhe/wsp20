@@ -44,6 +44,10 @@
                 <td>ISBN</td>
                 <td><%= b.data.isbn %></td>
             </tr>
+            <tr>
+                <td>Rating</td>
+                <td><%= b.data.rating %> (<%= b.data.rating.length %> reviews)</td>
+            </tr>
         </table>
         <form action="/" method="get" style="display:inline">
             <button type="submit" class="btn btn-primary">Back</button>
@@ -55,9 +59,19 @@
     </div>
     <% } %>
 
-<br><br><br>
+    <br><br><br>
 
     <%- include('partials/scripts.ejs')%>
 </body>
 
 </html>
+
+<script>
+    function avg(array) {
+        let total = 0
+        array.forEach(element => {
+            total += element
+        });
+        return total / array.length
+    }
+</script>

@@ -30,6 +30,7 @@
                 <a class="nav-link" href="/b/interested">
                     Interested<span style="color:blue"><%= iCount > 0 ? `(${iCount})` : ''%></span></a>
             </li>
+            <% if(bCount>0) { %> <% } %>
             <li class="nav-item <%= page === 'borrowed' ? ' active' : ''%>">
                 <a class="nav-link" href="/b/borrowed">
                     Borrowed<span style="color:red"><%= bCount > 0 ? `(${bCount})` : ''%></span></a>
