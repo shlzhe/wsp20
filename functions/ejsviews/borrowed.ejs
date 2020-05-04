@@ -39,11 +39,16 @@
                 <th scope="row"><img height=50 src="<%= borrowed[i].book.image_url%>"></th>
                 <td><%= borrowed[i].book.title%></td>
                 <td><%= borrowed[i].book.author%></td>
+                <% if(borrowed[i].late) { %>
                 <td style="color: red; font-weight: bold;"><%= borrowed[i].duedate %></td>
+                <% } else { %>
+                <td><%= borrowed[i].duedate %></td>
+                <% } %>
                 <td width="15%">
                     <form action="/b/return" method="post" style="display: inline-block;">
                         <input type="hidden" name="bookId" value="<%= borrowed[i].bookId %>">
                         <input type="hidden" name="borrowId" value="<%= borrowed[i].borrowId %>">
+                        <input type="hidden" name="duedate" value="<%= borrowed[i].duedate %>">
                         <button type="submit" class="btn btn-primary">Return</button>
                     </form>
                 </td>

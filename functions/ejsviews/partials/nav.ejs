@@ -40,7 +40,7 @@
             </li>
             <% } %>
             <% if(user && user.email === 'sysadmin@test.com') { %>
-            <li class="nav-item">
+            <li class="nav-item <%= page === 'sysadmin' ? ' active' : ''%>">
                 <a class="nav-link" href="/admin/sysadmin">SysAdmin</a>
             </li>
             <% } %>

@@ -17,7 +17,7 @@ class TempInterest {
 
     remove(id) {
         for (const item of this.contents) {
-            if (item.book.id === id) {
+            if (item === id) {
                 this.contents.splice(this.contents.indexOf(item), 1)
             }
         }
