@@ -382,13 +382,15 @@ app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
     const msg = req.body.msg
     const interestedId = req.body.interestedId
     try {
+        const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
+        const doc = await collection.doc(bookId).get()
         const data = {
             uid: req.decodedIdToken.uid,
             bookId
         }
         await adminUtil.borrow(bookId, data)
-        console.log('+=++_+_+_+_+_+_+_+', date)
-        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, date)
+        console.log('+=++_+_+_+_+_+_+_+', msg)
+        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, doc.image, date)
         await adminUtil.uninterested(interestedId)
         res.setHeader('Cache-Control', 'private')
         res.redirect('/b/borrowed')
@@ -440,7 +442,7 @@ app.post('/b/confirmreturn', authAndRedirectSignIn, async (req, res) => {
     try {
         console.log('+=++_+_+_+_+_+_+_+', msg)
         await adminUtil.unborrow(bookId, borrowId)
-        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, date)
+        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, null, date)
         res.setHeader('Cache-Control', 'private')
         res.redirect('/b/borrowed')
     } catch (e) {

@@ -17,7 +17,7 @@ var transporter = nodemailer.createTransport({
     }
 });
 
-function sendEmail(to, msg, title, date) {
+function sendEmail(to, msg, title, image, date) {
 
     var mailOptions = {
         from: `no-reply@wsp20.com`,
@@ -57,6 +57,7 @@ function sendEmail(to, msg, title, date) {
             html: `
                 <h4>${date}</h4>
                 <h2>This email is to show that you have successfully borrowed: </h2><br>
+                <p>${image}</p>
                 <h4> ${title} </h4>`
         };
     }
