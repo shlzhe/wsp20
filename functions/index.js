@@ -83,12 +83,12 @@ app.post('/', auth, async (req, res) => {
     const sortBy = req.body.sortBy
     const order = req.body.order;
     const search = req.body.search
-    
+
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
     const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
 
-    if(query === "sort") {
+    if (query === "sort") {
         try {
             let books = []
             const snapshot = await coll.orderBy(sortBy, order).get()
@@ -102,7 +102,7 @@ app.post('/', auth, async (req, res) => {
             res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
         }
     }
-    else if(query === "search") {
+    else if (query === "search") {
         try {
             let books = []
             console.log("search: ================", search)
@@ -111,14 +111,14 @@ app.post('/', auth, async (req, res) => {
             const snapshot3 = await coll.where("isbn", '==', parseInt(search)).get()
             snapshot.forEach(doc => {
                 books.push({ id: doc.id, data: doc.data() })
-            })        
+            })
             snapshot2.forEach(doc => {
                 books.push({ id: doc.id, data: doc.data() })
             })
             snapshot3.forEach(doc => {
                 books.push({ id: doc.id, data: doc.data() })
-            }) 
-    
+            })
+
             console.log('============books[]', books)
             res.setHeader('Cache-Control', 'private')
             res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount, bCount })
@@ -179,10 +179,10 @@ app.get('/b/contact', auth, async (req, res) => {
 app.post('/b/contact', auth, async (req, res) => {
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
-    try{
+    try {
         await adminUtil.sendEmail('sting7@uco.edu')
     }
-    catch(e) {
+    catch (e) {
         console.log(e)
     }
     res.setHeader('Cache-Control', 'private')
@@ -270,6 +270,8 @@ app.get('/b/interested', authAndRedirectSignIn, async (req, res) => {
     const bCount = await getbCount(req)
     let interested = []
     try {
+        const m = await adminUtil.getBorrowed(req.decodedIdToken)
+        const maxed = m.length >= Constants.SETTINGS.BOOKCOUNT ? true : false
         const b = await adminUtil.getInterested(req.decodedIdToken.uid)
         const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
         for (let i = 0; i < b.length; i++) {
@@ -277,7 +279,7 @@ app.get('/b/interested', authAndRedirectSignIn, async (req, res) => {
             interested.push({ interestedId: b[i].id, bookId: doc.id, book: doc.data() })
         }
         res.setHeader('Cache-Control', 'private')
-        res.render('interested.ejs', { message: false, interested, user: req.decodedIdToken, iCount, bCount })
+        res.render('interested.ejs', { message: false, interested, user: req.decodedIdToken, iCount, bCount, maxed })
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.send('<h1>Interested List Error</h1>' + e)
@@ -327,6 +329,9 @@ app.post('/b/remove', async (req, res) => {
 app.get('/b/borrowed', authAndRedirectSignIn, async (req, res) => {
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
+    const tdate = new Date()
+    const ddate = tdate.setDate(tdate.getDate() + parseInt(Constants.SETTINGS.FASTFORWARD))
+    const curdate = firebase.firestore.Timestamp.fromMillis(ddate).toDate()
     let borrowed = []
     try {
         const b = await adminUtil.getBorrowed(req.decodedIdToken)
@@ -336,7 +341,8 @@ app.get('/b/borrowed', authAndRedirectSignIn, async (req, res) => {
             const duedate = b[i].data.duedate.toDate()
             borrowed.push({
                 borrowId: b[i].id, bookId: doc.id, book: doc.data(), duedate,
-                late: new Date().getTime() - duedate.getTime() > 0 ? true : false
+                late: curdate.getTime() - duedate.getTime() > 0 ? true : false
+                //late: new Date().getTime() - duedate.getTime() > 0 ? true : false
             })
         }
         res.setHeader('Cache-Control', 'private')
@@ -353,7 +359,8 @@ app.post('/b/borrow', authAndRedirectSignIn, async (req, res) => {
     const bookId = req.body.bookId
     const interestedId = req.body.interestedId
     const tdate = new Date()
-    const duedate = firebase.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 2)).toDate()
+    const ddate = tdate.setDate(tdate.getDate() + parseInt(Constants.SETTINGS.DURATION))
+    const duedate = firebase.firestore.Timestamp.fromMillis(ddate).toDate()
     let toBorrow = []
     try {
         const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
@@ -398,7 +405,9 @@ app.post('/b/return', authAndRedirectSignIn, async (req, res) => {
     const borrowId = req.body.borrowId
     //const duedate = req.body.duedate
     const tdate = new Date()
-    const currentdate = firebase.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 4)).toDate()
+    const ddate = tdate.setDate(tdate.getDate() + parseInt(Constants.SETTINGS.FASTFORWARD))
+    const currentdate = firebase.firestore.Timestamp.fromMillis(ddate).toDate()
+    const latefee = Constants.SETTINGS.LATEFEE
     let toReturn = []
     try {
         const borrowed = firebase.firestore().collection(Constants.COLL_BORROWED)
@@ -411,7 +420,7 @@ app.post('/b/return', authAndRedirectSignIn, async (req, res) => {
             difference: Math.ceil((currentdate.getTime() - duedate.getTime()) / (1000 * 60 * 60 * 24))
         })
         res.setHeader('Cache-Control', 'private')
-        res.render('return.ejs', { message: false, books: toReturn, user: req.decodedIdToken, iCount, bCount })
+        res.render('return.ejs', { message: false, books: toReturn, user: req.decodedIdToken, iCount, bCount, latefee })
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.send("Failed to return " + e)
@@ -497,13 +506,27 @@ app.post('/admin/signup', (req, res) => {
 app.get('/admin/sysadmin', authSysAdmin, async (req, res) => {
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
-    res.render('admin/sysadmin.ejs', { user: req.decodedIdToken, iCount, bCount })
+    const settings = Constants.SETTINGS
+    res.render('admin/sysadmin.ejs', { message: false, user: req.decodedIdToken, iCount, bCount, settings })
 })
 
 app.get('/admin/listUsers', authSysAdmin, async (req, res) => {
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
     return adminUtil.listUsers(req, res)
+})
+
+app.post('/admin/sysadmin', authSysAdmin, async (req, res) => {
+    const iCount = await getiCount(req)
+    const bCount = await getbCount(req)
+    const s1 = req.body.s1
+    const s2 = req.body.s2
+    const s3 = req.body.s3
+    const s4 = req.body.s4
+    const s5 = req.body.s5
+    Constants.SETTINGS = { BOOKCOUNT: s1, DURATION: s2, FASTFORWARD: s3, LATEFEE: s4, WAITLIST: s5 }
+    const settings = Constants.SETTINGS
+    res.render('admin/sysadmin.ejs', { message: "Updated Successfully!", user: req.decodedIdToken, iCount, bCount, settings })
 })
 
 async function authSysAdmin(req, res, next) {

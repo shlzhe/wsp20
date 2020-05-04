@@ -16,7 +16,42 @@
 
     <h1>System Admin Home</h1>
 
-    <a href = "/admin/listUsers" class="btn btn-primary">List users</a>
+    <a href="/admin/listUsers" class="btn btn-primary">List users</a>
+
+    <br><br>
+
+    <h3>System Settings</h3>
+
+    <% if(message) { %>
+    <span style="color: green;"><%= message %></span>
+    <% } %>
+
+    <form action="/admin/sysadmin" method="post" style="display:inline">
+        <table class="table" style="width:50%;">
+            <tr>
+                <td>Borrow book count</td>
+                <td><input type="number" name="s1" value="<%= settings.BOOKCOUNT %>" style="width:3em"> books</td>
+            </tr>
+            <tr>
+                <td>Borrow duration</td>
+                <td><input type="number" name="s2" value="<%= settings.DURATION %>" style="width:3em"> days</td>
+            </tr>
+            <tr>
+                <td>Fast forward time</td>
+                <td><input type="number" name="s3" value="<%= settings.FASTFORWARD %>" style="width:3em"> days</td>
+            </tr>
+            <tr>
+                <td>Late fee per day</td>
+                <td><input type="number" name="s4" value="<%= settings.LATEFEE %>" style="width:3em"> $</td>
+            </tr>
+            <tr>
+                <td>Waitlist duration</td>
+                <td><input type="number" name="s5" value="<%= settings.WAITLIST %>" style="width:3em"> minutes</td>
+            </tr>
+        </table>
+
+        <button type="submit" class="btn btn-primary">Submit Changes</button>
+    </form>
 
     <%- include('../partials/scripts.ejs')%>
 </body>
