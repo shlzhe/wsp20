@@ -349,12 +349,20 @@ app.post('/b/search', auth, async (req, res) => {
     try {
         let books = []
         console.log("search: ================", search)
-        const snapshot = await coll.where("title", '==', search).get()
+        const snapshot = await coll.where("title", '>=', search).where("title", '<=', search + '\uf8ff').get()
+        const snapshot2 = await coll.where("author", '==', search).get()
+        const snapshot3 = await coll.where("isbn", '==', search).get()
         snapshot.forEach(doc => {
             books.push({ id: doc.id, data: doc.data() })
-            // console.log('============', books)
+        })        
+        snapshot2.forEach(doc => {
+            books.push({ id: doc.id, data: doc.data() })
         })
-        // console.log('============books[]', books)
+        snapshot3.forEach(doc => {
+            books.push({ id: doc.id, data: doc.data() })
+        }) 
+
+        console.log('============books[]', books)
         res.setHeader('Cache-Control', 'private')
         res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount })
     } catch (e) {
@@ -365,56 +373,57 @@ app.post('/b/search', auth, async (req, res) => {
 })
 
 app.post('/b/textBoxSearch', auth, async (req, res) => {
+    const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
+    const textBoxSearch = req.body.textBoxSearch
     try {
         // document.addEventListener('DOMContentLoaded', async function() {
-            const db = firebase.firestore();
-    
-            const searchByName = async ({
-              search = '',
-              limit = 50,
-              lastNameOfLastPerson = ''
-            } = {}) => {
-              const snapshot = await db.collection('people')
-                .where('keywords', 'array-contains', search.toLowerCase())
-                .orderBy('name.last')
-                .startAfter(lastNameOfLastPerson)
-                .limit(limit)
+        console.log('started')
+            // const searchByName = async ({
+            //   search = '',
+            //   limit = 50,
+            //   lastNameOfLastPerson = ''
+            // } = {}) => {
+              const snapshot = await coll
+                .where('keywords', 'array-contains', textBoxSearch.toLowerCase())
+                // .orderBy('name.last')
+                // .startAfter(lastNameOfLastPerson)
+                // .limit(limit)
                 .get();
               return snapshot.docs.reduce((acc, doc) => {
-                const name = doc.data().name;
-                return acc.concat(`
-                  <tr>
-                    <td>${name.last}</td>
-                    <td>${name.first}</td>
-                    <td>${name.middle}</td>
-                    <td>${name.suffix}</td>
-                  </tr>`);
+                books.push({ id: doc.id, data: doc.data() })
+                console.log('+++++++++++++++', books)
+                // return acc.concat(`
+                //   <tr>
+                //     <td>${name.last}</td>
+                //     <td>${name.first}</td>
+                //     <td>${name.middle}</td>
+                //     <td>${name.suffix}</td>
+                //   </tr>`);
+                res.setHeader('Cache-Control', 'private')
+                res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount })
+           
               }, '');
-            };
+            // };
     
             // const textBoxSearch = document.querySelector('#textBoxSearch');
-            const textBoxSearch = req.body.textBoxSearch;
-            
-
-
+        //    // const textBoxSearch = req.body.textBoxSearch;    
+            // const searchList = firebase.firestore().collection(Constants.COLL_BOOKS)
+            // searchList.innerHTML = await searchByName();
     
-            const rowsPeople = document.querySelector('#rowsPeople');
-            rowsPeople.innerHTML = await searchByName();
+            // textBoxSearch.addEventListener('keyup', async (e) =>  await searchByName({search: e.target.value}));
     
-            textBoxSearch.addEventListener('keyup', async (e) => rowsPeople.innerHTML = await searchByName({search: e.target.value}));
+            // async function lazyLoad() {
+            //   const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) === window.scrollY; 
+            //   if (scrollIsAtTheBottom) {
+            //     const lastNameOfLastPerson = searchList.lastChild.firstElementChild.textContent;
     
-            async function lazyLoad() {
-              const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) === window.scrollY; 
-              if (scrollIsAtTheBottom) {
-                const lastNameOfLastPerson = rowsPeople.lastChild.firstElementChild.textContent;
-    
-                rowsPeople.innerHTML += await searchByName({
-                  search: textBoxSearch.value,
-                  lastNameOfLastPerson: lastNameOfLastPerson
-                });
-              }
-            }
-            window.addEventListener('scroll', lazyLoad);
+            //     searchList.innerHTML += await searchByName({
+            //       search: textBoxSearch.value,
+            //       lastNameOfLastPerson: lastNameOfLastPerson
+            //     });
+            //   }
+            // }
+            // window.addEventListener('scroll', lazyLoad);
         //   });
     }
     catch(e) {
