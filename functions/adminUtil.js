@@ -78,13 +78,13 @@ async function verifyIdToken(idToken) {
     }
 }
 
-async function getInterested(decodedIdToken) {
+async function getInterested(uid) {
     try {
         const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
         let interested = []
-        const snapshot = await collection.where("uid", "==", decodedIdToken.uid).orderBy("timestamp").get()
+        const snapshot = await collection.where("uid", "==", uid).orderBy("timestamp").get()
         snapshot.forEach(doc => {
-            interested.push(doc.data())
+            interested.push({ id: doc.id, data: doc.data() })
         })
         return interested
     } catch (e) {
@@ -92,38 +92,31 @@ async function getInterested(decodedIdToken) {
     }
 }
 
-async function saveInterested(data) {
-    data.timestamp = admin.firestore.Timestamp.fromDate(new Date())
-    try {
-        const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
-        await collection.doc().set(data)
-    } catch (e) {
-        throw e
-    }
-}
-
-
-async function borrow(id, data) {
+async function interested(data) {
     const tdate = new Date()
     data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
-    data.duedate = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 2))
-
     try {
-        const books = admin.firestore().collection(Constants.COLL_BOOKS)
-        await books.doc(id).update({ status: Constants.STATUS_UNAVAILABLE })
-
-        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
-        await collection.doc().set(data)
+        let found = false
+        const interested = await getInterested(data.uid)
+        interested.forEach(i => {
+            if (i.data.bookId === data.bookId) {
+                found = true
+            }
+        })
+        if (!found) {
+            const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
+            await collection.doc().set(data)
+        }
     } catch (e) {
+        console.log("================" + e)
         throw e
     }
 }
 
-async function unborrow(data) {
-    data.timestamp = admin.firestore.Timestamp.fromDate(new Date())
+async function uninterested(interestedId) {
     try {
-        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
-        await collection.doc().delete(data)
+        const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
+        await collection.doc(interestedId).delete()
     } catch (e) {
         throw e
     }
@@ -135,7 +128,7 @@ async function getBorrowed(decodedIdToken) {
         let borrowed = []
         const snapshot = await collection.where("uid", "==", decodedIdToken.uid).orderBy("timestamp").get()
         snapshot.forEach(doc => {
-            borrowed.push(doc.data())
+            borrowed.push({ id: doc.id, data: doc.data() })
         })
         return borrowed
     } catch (e) {
@@ -143,13 +136,43 @@ async function getBorrowed(decodedIdToken) {
     }
 }
 
+async function borrow(bookId, data) {
+    const tdate = new Date()
+    data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
+    data.duedate = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 2))
+
+    try {
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        await books.doc(bookId).update({ status: Constants.STATUS_UNAVAILABLE })
+
+        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
+        await collection.doc().set(data)
+    } catch (e) {
+        throw e
+    }
+}
+
+async function unborrow(bookId, borrowId) {
+    try {
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
+
+        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
+        await collection.doc(borrowId).delete()
+    } catch (e) {
+        console.log("===========================", e)
+        throw e
+    }
+}
+
 module.exports = {
     createUser,
     listUsers,
     verifyIdToken,
-    saveInterested,
     getInterested,
+    interested,
+    uninterested,
+    getBorrowed,
     borrow,
     unborrow,
-    getBorrowed
 }

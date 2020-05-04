@@ -28,11 +28,11 @@
             <% } %>
             <li class="nav-item <%= page === 'interested' ? ' active' : ''%>">
                 <a class="nav-link" href="/b/interested">
-                    Interested<%= iCount > 0 ? `(${iCount})` : ''%></a>
+                    Interested<span style="color:blue"><%= iCount > 0 ? `(${iCount})` : ''%></span></a>
             </li>
             <li class="nav-item <%= page === 'borrowed' ? ' active' : ''%>">
                 <a class="nav-link" href="/b/borrowed">
-                    Borrowed<%= iCount > 0 ? `(${iCount})` : ''%></a>
+                    Borrowed<span style="color:red"><%= bCount > 0 ? `(${bCount})` : ''%></span></a>
             </li>
             <% if(user && (user.email === 'prodadmin@test.com' || user.email === 'sysadmin@test.com')) { %>
             <li class="nav-item">
@@ -82,7 +82,6 @@
             <% } %>
         </ul>
     </div>
-
 </nav>
 </nav>
 
