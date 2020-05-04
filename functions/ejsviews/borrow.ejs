@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <%- include('partials/header.ejs')%>
+
+    <title>Borrow</title>
+</head>
+
+<body>
+    <%- include('partials/nav.ejs', {page: 'borrow', user}) %>
+
+    <h1>Borrow</h1>
+    <h3>You are about to borrow the following book:</h3>
+
+    <% for(let b of books){ %>
+    <div style="width:50%">
+        <img height=200 src="<%= b.data.image_url%>">
+        <table class="table">
+            <tr>
+                <td>Title</td>
+                <td><%= b.data.title %></td>
+            </tr>
+            <tr>
+                <td>Author</td>
+                <td><%= b.data.author %></td>
+            </tr>
+            <tr>
+                <td>Due Date</td>
+                <td><span style="color:red; font-weight: bold;"><%= b.duedate %></span></td>
+            </tr>
+        </table>
+        <h5>By clicking 'Agree and Borrow', you are agreeing to the following: </h5>
+        <h6>1. I will take good care of the book. </h6>
+        <h6>2. I will return the book by the due date. </h6>
+        <h6>3. I will pay a fine for each day that I am late. </h6>
+        <h6>4. I will pay the cost of the book plus a fine if I lose the book. </h6>
+        <br>
+        <form action="/b/confirmborrow" method="post" style="display:inline">
+            <input type="hidden" name="bookId" value="<%= b.bookId %>">
+            <input type="hidden" name="interestedId" value="<%= b.interestedId %>">
+            <button type="submit" class="btn btn-primary">Agree and Borrow</button>
+        </form>
+        <form action="/b/interested" method="get" style="display:inline">
+            <button type="submit" class="btn btn-primary">Cancel</button>
+        </form>
+    </div>
+    <% } %>
+
+    <br><br><br>
+
+    <%- include('partials/scripts.ejs')%>
+</body>
+
+</html>

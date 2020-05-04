@@ -10,3 +10,13 @@
     padding: 15px;
     margin: auto;
 }
+
+.top {
+    background-color: darkslategrey;
+    color: lightgoldenrodyellow;
+    padding: 0.5%;
+    top: 0px;
+    width: 100%;
+    position: fixed;
+    z-index: 1;
+}

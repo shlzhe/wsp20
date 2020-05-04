@@ -31,15 +31,17 @@
             <div class=" col-md-8">
                 <div class="card-body">
                     <h5 class="card-title"><%= b.data.title %></h5>
-                    <p class="card-text"><%= b.data.summary %></p>
-                    <form action="/b/book" method="post" style="display:inline">
-                        <input type="hidden" name="docId" value="<%= b.id %>">
-                        <button type="submit" class="btn btn-primary">Details</button>
-                    </form>
-                    <form action="/b/add2interested" method="post" style="display:inline">
-                        <input type="hidden" name="docId" value="<%= b.id %>">
-                        <button type="submit" class="btn btn-primary">Add to Interested</button>
-                    </form>
+                    <p class="card-text"><%= b.data.author %></p>
+                    <div style="position: absolute; bottom:5%">
+                        <form action="/b/book" method="post" style="display:inline">
+                            <input type="hidden" name="bookId" value="<%= b.bookId %>">
+                            <button type="submit" class="btn btn-primary">Details</button>
+                        </form>
+                        <form action="/b/add2interested" method="post" style="display:inline">
+                            <input type="hidden" name="bookId" value="<%= b.bookId %>">
+                            <button type="submit" class="btn btn-primary">Add to Interested</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
