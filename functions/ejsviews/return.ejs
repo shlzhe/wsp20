@@ -63,10 +63,14 @@
         <h6>1. I have taken good care of the book. </h6>
         <h6>2. I will pay whatever fines I owe, if any</h6>
         <br>
-        <form action="/b/confirmreturn" method="post" style="display:inline">
+        <form action="/b/review" method="post" style="display:inline" onSubmit="return pay('<%=b.difference%>')">
             <input type="hidden" name="bookId" value="<%= b.bookId %>">
             <input type="hidden" name="borrowId" value="<%= b.borrowId %>">
+            <% if(b.difference>0) { %>
+            <button type="submit" class="btn btn-primary">Pay fine and Return</button>
+            <% } else { %>
             <button type="submit" class="btn btn-primary">Confirm Return</button>
+            <% } %>
         </form>
         <form action="/b/borrowed" method="get" style="display:inline">
             <button type="submit" class="btn btn-primary">Cancel</button>
@@ -80,3 +84,20 @@
 </body>
 
 </html>
+
+<script>
+    function pay(late) {
+        if (late <= 0) return true
+        let card = ''
+        while (card.length != 16) {
+            card = prompt('Please enter credit card number (16 digits)')
+            if (card == null) return false
+        }
+        let cvv = ''
+        while (cvv.length != 3) {
+            cvv = prompt('Please enter CVV (3 digits)')
+            if (cvv == null) return false
+        }
+        return true
+    }
+</script>

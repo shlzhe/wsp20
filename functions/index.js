@@ -181,12 +181,13 @@ app.post('/b/contact', auth, async (req, res) => {
     const bCount = await getbCount(req)
     try {
         await adminUtil.sendEmail('sting7@uco.edu')
+        res.setHeader('Cache-Control', 'private')
+        res.render('contact.ejs', { user: req.decodedIdToken, iCount, bCount })
     }
     catch (e) {
         console.log(e)
+        res.send("Email error" + e)
     }
-    res.setHeader('Cache-Control', 'private')
-    res.render('contact.ejs', { user: req.decodedIdToken, iCount, bCount })
 })
 
 app.get('/b/signin', async (req, res) => {
@@ -421,16 +422,15 @@ app.post('/b/return', authAndRedirectSignIn, async (req, res) => {
     }
 })
 
-app.post('/b/confirmreturn', authAndRedirectSignIn, async (req, res) => {
+app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
     const iCount = await getiCount(req)
-    const bCount = await getbCount(req)
     const bookId = req.body.bookId
     const borrowId = req.body.borrowId
-    let borrowed = []
     try {
         await adminUtil.unborrow(bookId, borrowId)
+        const bCount = await getbCount(req) // bCount updated because of return
         res.setHeader('Cache-Control', 'private')
-        res.redirect('/b/borrowed')
+        res.render('review.ejs', { bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         return res.render('borrowed.ejs',
@@ -439,7 +439,21 @@ app.post('/b/confirmreturn', authAndRedirectSignIn, async (req, res) => {
     }
 })
 
-app.post('/b/waitlist', auth, async (req, res) => {
+app.post('/b/confirmreturn', authAndRedirectSignIn, async (req, res) => {
+    const bookId = req.body.bookId
+    const rating = req.body.rating
+    try {
+        await adminUtil.review(bookId, rating)
+        res.setHeader('Cache-Control', 'private')
+        res.redirect('/b/borrowed')
+    } catch (e) {
+        res.setHeader('Cache-Control', 'private')
+        res.send("Failed to Review " + e)
+
+    }
+})
+
+app.post('/b/waitlist', authAndRedirectSignIn, async (req, res) => {
     const bookId = req.body.bookId
     try {
         const data = {
@@ -575,6 +589,10 @@ app.get('/test', (req, res) => {
 
 app.get('/test2', (req, res) => {
     res.redirect('http://www.uco.edu')
+})
+
+app.get('/test3', (req, res) => {
+    res.render('test.ejs')
 })
 
 async function getiCount(req) {

@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 
 var serviceAccount = require("./renjianl-wsp20-firebase-adminsdk-hoq0l-85a8204f99.json");
 
-admin.initializeApp( {
+admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://renjianl-wsp20.firebaseio.com"
 });
@@ -26,7 +26,7 @@ function sendEmail(to) {
         html: `<h1>Order Confirmation</h1>
          <p> <b>Email: </b>${to} </p>`
     };
-    
+
     return transporter.sendMail(mailOptions, (error, data) => {
         if (error) {
             console.log("======================", error)
@@ -178,7 +178,7 @@ async function getBorrowed(decodedIdToken) {
 async function borrow(bookId, data) {
     const tdate = new Date()
     data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
-    data.duedate = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 2))
+    data.duedate = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + parseInt(Constants.SETTINGS.DURATION)))
 
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
@@ -204,6 +204,22 @@ async function unborrow(bookId, borrowId) {
     }
 }
 
+async function review(bookId, rating) {
+    if (rating < 1 || rating > 5) return
+    try {
+        console.log(bookId, "^^^^^^^^^^^^^^^^^^", rating)
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        book = await books.doc(bookId).get()
+        totalrating = book.data().rating
+        if (totalrating) totalrating.push(rating)
+        else totalrating = [rating]
+        await books.doc(bookId).update({ rating: totalrating })
+    } catch (e) {
+        console.log("===========================", e)
+        throw e
+    }
+}
+
 module.exports = {
     createUser,
     listUsers,
@@ -216,5 +232,6 @@ module.exports = {
     unborrow,
     sendEmail,
     getWaitlist,
-    waitlist
+    waitlist,
+    review,
 }

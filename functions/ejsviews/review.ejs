@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <%- include('partials/header.ejs')%>
+
+    <title>Review</title>
+</head>
+
+<body>
+    <%- include('partials/nav.ejs', {page: 'review', user}) %>
+
+    <h1>Review</h1>
+    <h3>Please rate the book: </h3>
+
+    <form action="/b/confirmreturn" method="post" style="display: inline;">
+        <input type="hidden" name="bookId" value="<%= bookId %>">
+        <input type="hidden" name="borrowId" value="<%= borrowId %>">
+        <input type="number" name="rating" style="width:3em"> Stars
+        <br><br>
+        <button type="submit" class="btn btn-primary">Rate</button>
+    </form>
+    <form action="/b/confirmreturn" method="post" style="display: inline;">
+        <input type="hidden" name="bookId" value="<%= bookId %>">
+        <input type="hidden" name="borrowId" value="<%= borrowId %>">
+        <input type="number" name="rating" value="0" hidden>
+        <button type="submit" class="btn btn-secondary">No Thanks</button>
+    </form>
+
+    <%- include('partials/scripts.ejs')%>
+</body>
+
+</html>
