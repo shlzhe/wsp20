@@ -19,27 +19,24 @@ admin.initializeApp({
 //     }
 // });
 
-// exports.sendEmail = functions.firestore
-//     .document('orders/{orderId}')
-//     .onCreate((snap, context) => {
-
-// });
-
-// const mailOptions = {
-//     from: `softauthor1@gmail.com`,
-//     to: snap.data().email,
-//     subject: 'contact form message',
-//     html: `<h1>Order Confirmation</h1>
+// function sendEmail(toemail, msg) {
+//     const mailOptions = {
+//         from: `softauthor1@gmail.com`,
+//         to: snap.data().email,
+//         subject: 'contact form message',
+//         html: `<h1>Order Confirmation</h1>
 //      <p> <b>Email: </b>${snap.data().email} </p>`
-// };
+//     };
 
-// return transporter.sendMail(mailOptions, (error, data) => {
-//     if (error) {
-//         console.log(error)
-//         return
-//     }
-//     console.log("Sent!")
-// });
+//     return transporter.sendMail(mailOptions, (error, data) => {
+//         if (error) {
+//             console.log(error)
+//             return
+//         }
+//         console.log("Sent!")
+//     });
+// }
+
 const Constants = require('./myconstants.js')
 
 async function createUser(req, res) {
@@ -60,12 +57,18 @@ async function createUser(req, res) {
     }
 }
 
-async function listUsers(req, res) {
+async function listUsers(req, res, iCount, bCount) {
     try {
         const userRecords = await admin.auth().listUsers()
-        res.render('admin/listUsers.ejs', { users: userRecords.users, error: false })
+        res.render('admin/listUsers.ejs', {
+            user: req.decodedIdToken, users: userRecords.users, error: false,
+            iCount, bCount
+        })
     } catch (e) {
-        res.render('admin/listUsers.ejs', { users: false, error: false })
+        res.render('admin/listUsers.ejs', {
+            user: req.decodedIdToken, users: false, error: false,
+            iCount, bCount
+        })
     }
 }
 
@@ -118,6 +121,42 @@ async function uninterested(interestedId) {
         const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
         await collection.doc(interestedId).delete()
     } catch (e) {
+        throw e
+    }
+}
+
+async function getWaitlist(uid) {
+    try {
+        const collection = admin.firestore().collection(Constants.COLL_WAITLIST)
+        let waitlist = []
+        const snapshot = await collection.where("uid", "==", uid).orderBy("timestamp").get()
+        snapshot.forEach(doc => {
+            waitlist.push({ id: doc.id, data: doc.data() })
+        })
+        return waitlist
+    } catch (e) {
+        console.log("================" + e)
+        return null
+    }
+}
+
+async function waitlist(data) {
+    const tdate = new Date()
+    data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
+    try {
+        let found = false
+        const waitlist = await getWaitlist(data.uid)
+        waitlist.forEach(i => {
+            if (i.data.bookId === data.bookId) {
+                found = true
+            }
+        })
+        if (!found) {
+            const collection = admin.firestore().collection(Constants.COLL_WAITLIST)
+            await collection.doc().set(data)
+        }
+    } catch (e) {
+        console.log("================" + e)
         throw e
     }
 }
@@ -175,4 +214,6 @@ module.exports = {
     getBorrowed,
     borrow,
     unborrow,
+    getWaitlist,
+    waitlist
 }

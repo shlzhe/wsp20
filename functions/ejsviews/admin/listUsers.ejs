@@ -12,9 +12,11 @@
 </head>
 
 <body>
+    <%- include('../partials/nav.ejs', {page: 'sysadmin', user}) %>
+
     <h1>List of Users</h1>
 
-    <a href="/admin/sysadmin" class="btn btn-outline-primary">System Admin Home</a>
+    <a href="/admin/sysadmin" class="btn btn-primary">System Admin Home</a>
     <br>
 
     <% if(!error) { %>
