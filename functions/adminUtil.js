@@ -1,45 +1,45 @@
-var admin = require("firebase-admin");
+const admin = require("firebase-admin");
 const functions = require('firebase-functions');
 const nodemailer = require('nodemailer');
 
 var serviceAccount = require("./renjianl-wsp20-firebase-adminsdk-hoq0l-85a8204f99.json");
 
-admin.initializeApp({
+admin.initializeApp( {
     credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://renjianl-wsp20.firebaseio.com"
 });
 
-// var transporter = nodemailer.createTransport({
-//     host: 'smtp.sendgrid.net',
-//     port: 465,
-//     secure: true,
-//     auth: {
-//         user: 'apikey',
-//         pass: 'asdasd123'
-//     }
-// });
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'wsp20library@gmail.com',
+        pass: 'wsplibrary20'
+    }
+});
 
-// exports.sendEmail = functions.firestore
-//     .document('orders/{orderId}')
-//     .onCreate((snap, context) => {
+function sendEmail(to) {
 
-// });
+    const mailOptions = {
+        from: `no-reply@wsp20.com`,
+        to,
+        subject: 'Test message',
+        html: `<h1>Order Confirmation</h1>
+         <p> <b>Email: </b>${to} </p>`
+    };
+    
+    return transporter.sendMail(mailOptions, (error, data) => {
+        if (error) {
+            console.log("======================", error)
+            return
+        }
+        var data = JSON.stringify(data)
+        return res.send(`Sent! ${data}`);
+    });
+}
 
-// const mailOptions = {
-//     from: `softauthor1@gmail.com`,
-//     to: snap.data().email,
-//     subject: 'contact form message',
-//     html: `<h1>Order Confirmation</h1>
-//      <p> <b>Email: </b>${snap.data().email} </p>`
-// };
 
-// return transporter.sendMail(mailOptions, (error, data) => {
-//     if (error) {
-//         console.log(error)
-//         return
-//     }
-//     console.log("Sent!")
-// });
+
+
 const Constants = require('./myconstants.js')
 
 async function createUser(req, res) {
@@ -60,12 +60,18 @@ async function createUser(req, res) {
     }
 }
 
-async function listUsers(req, res) {
+async function listUsers(req, res, iCount, bCount) {
     try {
         const userRecords = await admin.auth().listUsers()
-        res.render('admin/listUsers.ejs', { users: userRecords.users, error: false })
+        res.render('admin/listUsers.ejs', {
+            user: req.decodedIdToken, users: userRecords.users, error: false,
+            iCount, bCount
+        })
     } catch (e) {
-        res.render('admin/listUsers.ejs', { users: false, error: false })
+        res.render('admin/listUsers.ejs', {
+            user: req.decodedIdToken, users: false, error: false,
+            iCount, bCount
+        })
     }
 }
 
@@ -78,13 +84,13 @@ async function verifyIdToken(idToken) {
     }
 }
 
-async function getInterested(decodedIdToken) {
+async function getInterested(uid) {
     try {
         const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
         let interested = []
-        const snapshot = await collection.where("uid", "==", decodedIdToken.uid).orderBy("timestamp").get()
+        const snapshot = await collection.where("uid", "==", uid).orderBy("timestamp").get()
         snapshot.forEach(doc => {
-            interested.push(doc.data())
+            interested.push({ id: doc.id, data: doc.data() })
         })
         return interested
     } catch (e) {
@@ -92,39 +98,68 @@ async function getInterested(decodedIdToken) {
     }
 }
 
-async function saveInterested(data) {
-    data.timestamp = admin.firestore.Timestamp.fromDate(new Date())
-    try {
-        const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
-        await collection.doc().set(data)
-    } catch (e) {
-        throw e
-    }
-}
-
-
-async function borrow(id, data) {
+async function interested(data) {
     const tdate = new Date()
     data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
-    data.duedate = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 2))
-
     try {
-        const books = admin.firestore().collection(Constants.COLL_BOOKS)
-        await books.doc(id).update({ status: Constants.STATUS_UNAVAILABLE })
+        let found = false
+        const interested = await getInterested(data.uid)
+        interested.forEach(i => {
+            if (i.data.bookId === data.bookId) {
+                found = true
+            }
+        })
+        if (!found) {
+            const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
+            await collection.doc().set(data)
+        }
+    } catch (e) {
+        console.log("================" + e)
+        throw e
+    }
+}
 
-        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
-        await collection.doc().set(data)
+async function uninterested(interestedId) {
+    try {
+        const collection = admin.firestore().collection(Constants.COLL_INTERESTED)
+        await collection.doc(interestedId).delete()
     } catch (e) {
         throw e
     }
 }
 
-async function unborrow(data) {
-    data.timestamp = admin.firestore.Timestamp.fromDate(new Date())
+async function getWaitlist(uid) {
     try {
-        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
-        await collection.doc().delete(data)
+        const collection = admin.firestore().collection(Constants.COLL_WAITLIST)
+        let waitlist = []
+        const snapshot = await collection.where("uid", "==", uid).orderBy("timestamp").get()
+        snapshot.forEach(doc => {
+            waitlist.push({ id: doc.id, data: doc.data() })
+        })
+        return waitlist
     } catch (e) {
+        console.log("================" + e)
+        return null
+    }
+}
+
+async function waitlist(data) {
+    const tdate = new Date()
+    data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
+    try {
+        let found = false
+        const waitlist = await getWaitlist(data.uid)
+        waitlist.forEach(i => {
+            if (i.data.bookId === data.bookId) {
+                found = true
+            }
+        })
+        if (!found) {
+            const collection = admin.firestore().collection(Constants.COLL_WAITLIST)
+            await collection.doc().set(data)
+        }
+    } catch (e) {
+        console.log("================" + e)
         throw e
     }
 }
@@ -135,7 +170,7 @@ async function getBorrowed(decodedIdToken) {
         let borrowed = []
         const snapshot = await collection.where("uid", "==", decodedIdToken.uid).orderBy("timestamp").get()
         snapshot.forEach(doc => {
-            borrowed.push(doc.data())
+            borrowed.push({ id: doc.id, data: doc.data() })
         })
         return borrowed
     } catch (e) {
@@ -143,13 +178,46 @@ async function getBorrowed(decodedIdToken) {
     }
 }
 
+async function borrow(bookId, data) {
+    const tdate = new Date()
+    data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
+    data.duedate = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 2))
+
+    try {
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        await books.doc(bookId).update({ status: Constants.STATUS_UNAVAILABLE })
+
+        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
+        await collection.doc().set(data)
+    } catch (e) {
+        throw e
+    }
+}
+
+async function unborrow(bookId, borrowId) {
+    try {
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
+
+        const collection = admin.firestore().collection(Constants.COLL_BORROWED)
+        await collection.doc(borrowId).delete()
+    } catch (e) {
+        console.log("===========================", e)
+        throw e
+    }
+}
+
 module.exports = {
     createUser,
     listUsers,
     verifyIdToken,
-    saveInterested,
     getInterested,
+    interested,
+    uninterested,
+    getBorrowed,
     borrow,
     unborrow,
-    getBorrowed
+    sendEmail,
+    getWaitlist,
+    waitlist
 }

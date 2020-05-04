@@ -28,11 +28,11 @@
             <% } %>
             <li class="nav-item <%= page === 'interested' ? ' active' : ''%>">
                 <a class="nav-link" href="/b/interested">
-                    Interested<%= iCount > 0 ? `(${iCount})` : ''%></a>
+                    Interested<span style="color:blue"><%= iCount > 0 ? `(${iCount})` : ''%></span></a>
             </li>
             <li class="nav-item <%= page === 'borrowed' ? ' active' : ''%>">
                 <a class="nav-link" href="/b/borrowed">
-                    Borrowed<%= iCount > 0 ? `(${iCount})` : ''%></a>
+                    Borrowed<span style="color:red"><%= bCount > 0 ? `(${bCount})` : ''%></span></a>
             </li>
             <% if(user && (user.email === 'prodadmin@test.com' || user.email === 'sysadmin@test.com')) { %>
             <li class="nav-item">
@@ -40,26 +40,54 @@
             </li>
             <% } %>
             <% if(user && user.email === 'sysadmin@test.com') { %>
-            <li class="nav-item">
+            <li class="nav-item <%= page === 'sysadmin' ? ' active' : ''%>">
                 <a class="nav-link" href="/admin/sysadmin">SysAdmin</a>
             </li>
             <% } %>
+            <% if(page === 'storefront') { %>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Options
+                <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    Sort By
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAZ()">Sort By (A-Z)</button>
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByZA()">Sort By (Z-A)</button>
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAuthorUp()">Sort By Author(A-Z)</button>
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"onclick="sortByAuthorDown()">Sort By Author(Z-A)</button>
+                    <form action="/" method="post" style="display:inline">
+                        <input type="hidden" name="query" value="sort">
+                        <input type="hidden" name="sortBy" value="title">
+                        <input type="hidden" name="order" value="asc">
+                        <button type="submit" class="btn btn-primary-outline">Title (A-Z)</button>
+                    </form>
+                    <form action="/" method="post" style="display:inline">
+                        <input type="hidden" name="query" value="sort">
+                        <input type="hidden" name="sortBy" value="title">
+                        <input type="hidden" name="order" value="desc">
+                        <button type="submit" class="btn btn-primary-outline">Title(Z-A)</button>
+                    </form>
+                    <form action="/" method="post" style="display:inline">
+                        <input type="hidden" name="query" value="sort">
+                        <input type="hidden" name="sortBy" value="author">
+                        <input type="hidden" name="order" value="asc">
+                        <button type="submit" class="btn btn-primary-outline">Author(A-Z)</button>
+                    </form>
+                    <form action="/" method="post" style="display:inline">
+                        <input type="hidden" name="query" value="sort">
+                        <input type="hidden" name="sortBy" value="author">
+                        <input type="hidden" name="order" value="desc">
+                        <button type="submit" class="btn btn-primary-outline">Author(Z-A)</button>
+                    </form>
                 </div>
             </li>
+            <% } %>
+            <li>
+                <form action="/" method="post">
+                    <input type="hidden" name="query" value="search">
+                    <input class="form-control form-control-sm" type="text" id= "search" name="search" placeholder="Looking for something?"aria-label="Search" style="display:inline-block">
+                    <button type="submit" class="btn btn-primary-outline">Search</button>
+                </form>    
+            </li>
+
         </ul>
     </div>
-    <input class="form-control form-control-sm w-25" type="text" id="search" placeholder="Search"
-        aria-label="Search">
-    <button class="btn btn-primary" type="button" onclick="searchProduct()">Search</button>
 </nav>
 </nav>
 

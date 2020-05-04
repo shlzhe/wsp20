@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <%- include('partials/header.ejs')%>
+
+    <title>Return</title>
+</head>
+
+<body>
+    <%- include('partials/nav.ejs', {page: 'return', user}) %>
+
+    <h1>Return</h1>
+    <h3>You are about to return the following book:</h3>
+
+    <% for(let b of books){ %>
+    <div style="width:50%">
+        <img height=200 src="<%= b.data.image_url%>">
+        <table class="table">
+            <tr>
+                <td>Title</td>
+                <td><%= b.data.title %></td>
+            </tr>
+            <tr>
+                <td>Author</td>
+                <td><%= b.data.author %></td>
+            </tr>
+            <tr>
+                <td>Current date</td>
+                <td><%= b.currentdate %></td>
+            </tr>
+            <tr>
+                <% if(b.difference>0) { %>
+                <td>Due date</td>
+                <td><span style="color:red; font-weight: bold;"><%= b.duedate %></td>
+                <% } else { %>
+                <td>Due date</td>
+                <td><%= b.duedate %></td>
+                <% } %>
+            </tr>
+            <tr>
+                <% if(b.difference>0) { %>
+                <td>Days late</td>
+                <td><span style="color:red; font-weight: bold;"><%= b.difference %></span></td>
+                <% } else { %>
+                <td>Days remaining</td>
+                <td><%= -b.difference %></td>
+                <% } %>
+            </tr>
+        </table>
+        <h5>By clicking 'Confirm Return', you are agreeing to the following: </h5>
+        <h6>1. I have taken good care of the book. </h6>
+        <h6>2. I will pay whatever fines I owe, if any</h6>
+        <br>
+        <form action="/b/confirmreturn" method="post" style="display:inline">
+            <input type="hidden" name="bookId" value="<%= b.bookId %>">
+            <input type="hidden" name="borrowId" value="<%= b.borrowId %>">
+            <button type="submit" class="btn btn-primary">Confirm Return</button>
+        </form>
+        <form action="/b/borrowed" method="get" style="display:inline">
+            <button type="submit" class="btn btn-primary">Cancel</button>
+        </form>
+    </div>
+    <% } %>
+
+    <br><br><br>
+
+    <%- include('partials/scripts.ejs')%>
+</body>
+
+</html>
