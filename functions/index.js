@@ -124,6 +124,19 @@ app.get('/b/contact', auth, async (req, res) => {
     res.render('contact.ejs', { user: req.decodedIdToken, iCount, bCount })
 })
 
+app.post('/b/contact', auth, async (req, res) => {
+    const iCount = await getiCount(req)
+    const bCount = await getbCount(req)
+    try{
+        await adminUtil.sendEmail('sting7@uco.edu')
+    }
+    catch(e) {
+        console.log(e)
+    }
+    res.setHeader('Cache-Control', 'private')
+    res.render('contact.ejs', { user: req.decodedIdToken, iCount, bCount })
+})
+
 app.get('/b/signin', async (req, res) => {
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
@@ -341,118 +354,115 @@ app.post('/b/return', authAndRedirectSignIn, async (req, res) => {
     }
 })
 
-app.post('/b/sortBy', auth, async (req, res) => {
+app.post('/', auth, async (req, res) => {
+    const query = req.body.query
     const sortBy = req.body.sortBy
     const order = req.body.order;
-    const iCount = req.session.interested ? req.session.interested.length : 0
-    const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
-    try {
-        let books = []
-        const snapshot = await coll.orderBy(sortBy, order).get()
-        snapshot.forEach(doc => {
-            books.push({ id: doc.id, data: doc.data() })
-        })
-        res.setHeader('Cache-Control', 'private')
-        res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount })
-    } catch (e) {
-        res.setHeader('Cache-Control', 'private')
-        res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount })
-    }
-})
-
-app.post('/b/search', auth, async (req, res) => {
-    const search = req.body.textBoxSearch
-    const iCount = req.session.interested ? req.session.interested.length : 0
+    const search = req.body.search
+    
+    const iCount = await getiCount(req)
+    const bCount = await getbCount(req)
     const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
 
-    try {
-        let books = []
-        console.log("search: ================", search)
-        const snapshot = await coll.where("title", '>=', search).where("title", '<=', search + '\uf8ff').get()
-        const snapshot2 = await coll.where("author", '==', search).get()
-        const snapshot3 = await coll.where("isbn", '==', search).get()
-        snapshot.forEach(doc => {
-            books.push({ id: doc.id, data: doc.data() })
-        })        
-        snapshot2.forEach(doc => {
-            books.push({ id: doc.id, data: doc.data() })
-        })
-        snapshot3.forEach(doc => {
-            books.push({ id: doc.id, data: doc.data() })
-        }) 
-
-        console.log('============books[]', books)
-        res.setHeader('Cache-Control', 'private')
-        res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount })
-    } catch (e) {
-        console.log('++++++++++=', e)
-        res.setHeader('Cache-Control', 'private')
-        res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount })
-    }
-})
-
-app.post('/b/textBoxSearch', auth, async (req, res) => {
-    const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
-    const textBoxSearch = req.body.textBoxSearch
-    try {
-        // document.addEventListener('DOMContentLoaded', async function() {
-        console.log('started')
-            // const searchByName = async ({
-            //   search = '',
-            //   limit = 50,
-            //   lastNameOfLastPerson = ''
-            // } = {}) => {
-              const snapshot = await coll
-                .where('keywords', 'array-contains', textBoxSearch.toLowerCase())
-                // .orderBy('name.last')
-                // .startAfter(lastNameOfLastPerson)
-                // .limit(limit)
-                .get();
-              return snapshot.docs.reduce((acc, doc) => {
+    if(query === "sort") {
+        try {
+            let books = []
+            const snapshot = await coll.orderBy(sortBy, order).get()
+            snapshot.forEach(doc => {
                 books.push({ id: doc.id, data: doc.data() })
-                console.log('+++++++++++++++', books)
-                // return acc.concat(`
-                //   <tr>
-                //     <td>${name.last}</td>
-                //     <td>${name.first}</td>
-                //     <td>${name.middle}</td>
-                //     <td>${name.suffix}</td>
-                //   </tr>`);
-                res.setHeader('Cache-Control', 'private')
-                res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount })
-           
-              }, '');
-            // };
-    
-            // const textBoxSearch = document.querySelector('#textBoxSearch');
-        //    // const textBoxSearch = req.body.textBoxSearch;    
-            // const searchList = firebase.firestore().collection(Constants.COLL_BOOKS)
-            // searchList.innerHTML = await searchByName();
-    
-            // textBoxSearch.addEventListener('keyup', async (e) =>  await searchByName({search: e.target.value}));
-    
-            // async function lazyLoad() {
-            //   const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) === window.scrollY; 
-            //   if (scrollIsAtTheBottom) {
-            //     const lastNameOfLastPerson = searchList.lastChild.firstElementChild.textContent;
-    
-            //     searchList.innerHTML += await searchByName({
-            //       search: textBoxSearch.value,
-            //       lastNameOfLastPerson: lastNameOfLastPerson
-            //     });
-            //   }
-            // }
-            // window.addEventListener('scroll', lazyLoad);
-        //   });
+            })
+            res.setHeader('Cache-Control', 'private')
+            res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount, bCount })
+        } catch (e) {
+            res.setHeader('Cache-Control', 'private')
+            res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
+        }
     }
-    catch(e) {
-        console.log('++++++++============+=', textBoxSearch)
-        console.log('++++++++++=', e)
-
+    else if(query === "search") {
+        try {
+            let books = []
+            console.log("search: ================", search)
+            const snapshot = await coll.where("title", '>=', search).where("title", '<=', search + '\uf8ff').get()
+            const snapshot2 = await coll.where("author", '==', search).get()
+            const snapshot3 = await coll.where("isbn", '==', parseInt(search)).get()
+            snapshot.forEach(doc => {
+                books.push({ id: doc.id, data: doc.data() })
+            })        
+            snapshot2.forEach(doc => {
+                books.push({ id: doc.id, data: doc.data() })
+            })
+            snapshot3.forEach(doc => {
+                books.push({ id: doc.id, data: doc.data() })
+            }) 
+    
+            console.log('============books[]', books)
+            res.setHeader('Cache-Control', 'private')
+            res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount, bCount })
+        } catch (e) {
+            console.log('++++++++++=', e)
+            res.setHeader('Cache-Control', 'private')
+            res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
+        }
     }
-
 })
 
+// app.post('/b/textBoxSearch', auth, async (req, res) => {
+//     const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
+//     const textBoxSearch = req.body.textBoxSearch
+//     try {
+//         // document.addEventListener('DOMContentLoaded', async function() {
+//         //     const db = firebase.firestore();
+    
+//             const searchByName = async ({
+//               search = '',
+//               limit = 50,
+//               lastNameOfLastPerson = ''
+//             } = {}) => {
+//               const snapshot = await coll
+//                 .where('keywords', 'array-contains', search.toLowerCase())
+//                 .orderBy('name.last')
+//                 .startAfter(lastNameOfLastPerson)
+//                 .limit(limit)
+//                 .get();
+//               return snapshot.docs.reduce((acc, doc) => {
+//                 const name = doc.data().name;
+//                 return acc.concat(`
+//                   <tr>
+//                     <td>${name.last}</td>
+//                     <td>${name.first}</td>
+//                     <td>${name.middle}</td>
+//                     <td>${name.suffix}</td>
+//                   </tr>`);
+//               }, '');
+//             };
+    
+//             const textBoxSearch = document.querySelector('#textBoxSearch');
+    
+//             const rowsPeople = document.querySelector('#rowsPeople');
+//             rowsPeople.innerHTML = await searchByName();
+    
+//             textBoxSearch.addEventListener('keyup', async (e) => rowsPeople.innerHTML = await searchByName({search: e.target.value}));
+    
+//             // async function lazyLoad() {
+//             //   const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) === window.scrollY; 
+//             //   if (scrollIsAtTheBottom) {
+//             //     const lastNameOfLastPerson = rowsPeople.lastChild.firstElementChild.textContent;
+    
+//             //     rowsPeople.innerHTML += await searchByName({
+//             //       search: textBoxSearch.value,
+//             //       lastNameOfLastPerson: lastNameOfLastPerson
+//             //     });
+//             //   }
+//             // }
+//             window.addEventListener('scroll', lazyLoad);
+//         //   });
+//     }
+//     catch(e) {
+//         console.log('++++++++============+=', textBoxSearch)
+//         console.log('++++++++++=', e)
+//     }
+
+// })
 
 
 //middleware

@@ -1,45 +1,45 @@
-var admin = require("firebase-admin");
+const admin = require("firebase-admin");
 const functions = require('firebase-functions');
 const nodemailer = require('nodemailer');
 
 var serviceAccount = require("./renjianl-wsp20-firebase-adminsdk-hoq0l-85a8204f99.json");
 
-admin.initializeApp({
+admin.initializeApp( {
     credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://renjianl-wsp20.firebaseio.com"
 });
 
-// var transporter = nodemailer.createTransport({
-//     host: 'smtp.sendgrid.net',
-//     port: 465,
-//     secure: true,
-//     auth: {
-//         user: 'apikey',
-//         pass: 'asdasd123'
-//     }
-// });
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'wsp20library@gmail.com',
+        pass: 'wsplibrary20'
+    }
+});
 
-// exports.sendEmail = functions.firestore
-//     .document('orders/{orderId}')
-//     .onCreate((snap, context) => {
+function sendEmail(to) {
 
-// });
+    const mailOptions = {
+        from: `no-reply@wsp20.com`,
+        to,
+        subject: 'Test message',
+        html: `<h1>Order Confirmation</h1>
+         <p> <b>Email: </b>${to} </p>`
+    };
+    
+    return transporter.sendMail(mailOptions, (error, data) => {
+        if (error) {
+            console.log("======================", error)
+            return
+        }
+        var data = JSON.stringify(data)
+        return res.send(`Sent! ${data}`);
+    });
+}
 
-// const mailOptions = {
-//     from: `softauthor1@gmail.com`,
-//     to: snap.data().email,
-//     subject: 'contact form message',
-//     html: `<h1>Order Confirmation</h1>
-//      <p> <b>Email: </b>${snap.data().email} </p>`
-// };
 
-// return transporter.sendMail(mailOptions, (error, data) => {
-//     if (error) {
-//         console.log(error)
-//         return
-//     }
-//     console.log("Sent!")
-// });
+
+
 const Constants = require('./myconstants.js')
 
 async function createUser(req, res) {
@@ -175,4 +175,5 @@ module.exports = {
     getBorrowed,
     borrow,
     unborrow,
+    sendEmail,
 }
