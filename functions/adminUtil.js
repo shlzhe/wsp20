@@ -37,9 +37,6 @@ function sendEmail(to) {
     });
 }
 
-
-
-
 const Constants = require('./myconstants.js')
 
 async function createUser(req, res) {

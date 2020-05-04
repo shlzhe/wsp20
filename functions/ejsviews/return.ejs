@@ -51,6 +51,13 @@
                 <td><%= -b.difference %></td>
                 <% } %>
             </tr>
+            <tr>
+                <% if(b.difference>0) { %>
+                <td>Late Fees Due</td>
+                <td><span style="color:red; font-weight: bold;">$<%= b.difference * latefee %></span></td>
+                <% } else { %>
+                <% } %>
+            </tr>
         </table>
         <h5>By clicking 'Confirm Return', you are agreeing to the following: </h5>
         <h6>1. I have taken good care of the book. </h6>

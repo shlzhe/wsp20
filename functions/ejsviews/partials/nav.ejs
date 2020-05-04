@@ -78,12 +78,13 @@
                 </div>
             </li>
             <% } %>
-            <li>
+            <li style="position: absolute; right:2%;">
                 <form action="/" method="post">
                     <input type="hidden" name="query" value="search">
-                    <input class="form-control form-control-sm" type="text" id= "search" name="search" placeholder="Looking for something?"aria-label="Search" style="display:inline-block">
-                    <button type="submit" class="btn btn-primary-outline">Search</button>
-                </form>    
+                    <input type="text" id="search" name="search" placeholder="Looking for something?"
+                        aria-label="Search" size="40" style="display:inline-block;">
+                    <button type="submit" class="btn btn-primary btn-sm" style="display: inline-block;">Search</button>
+                </form>
             </li>
 
         </ul>
