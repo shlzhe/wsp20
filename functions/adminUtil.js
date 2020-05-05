@@ -303,7 +303,7 @@ async function borrow(bookId, data) {
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
         const book = await books.doc(bookId).get()
-        if (book.data().status !== Constants.STATUS_AVAILABLE && !(book.data().waitlist[0] === data.uid)) {
+        if (book.data().status !== Constants.STATUS_AVAILABLE && book.data().waitlist[0] !== data.uid) {
             return false
         }
         await books.doc(bookId).update({ status: Constants.STATUS_UNAVAILABLE })
@@ -317,19 +317,26 @@ async function borrow(bookId, data) {
     }
 }
 
-async function unborrow(bookId, borrowId) {
+async function unborrow(bookId, borrowId, msg, title, image_url, date) {
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
         await books.doc(bookId).update({ status: Constants.STATUS_WAITLISTED })
 
         const collection = admin.firestore().collection(Constants.COLL_BORROWED)
         await collection.doc(borrowId).delete()
+        book = await books.doc(bookId).get()
+        fullwaitlist = book.data().waitlist
+        userRecord = await admin.auth().getUser(fullwaitlist[0])
+        to = userRecord.email
+        sendEmail(to, msg, title, image_url, date)
         var waitlistInterval = setInterval(async () => {
-            book = await books.doc(bookId).get()
-            fullwaitlist = book.data().waitlist
-            sendEmail(to, msg, title, image_url, date)
             fullwaitlist.splice(0, 1)
             console.log("===========================timesup")
+            book = await books.doc(bookId).get()
+            fullwaitlist = book.data().waitlist
+            userRecord = await admin.auth().getUser(fullwaitlist[0])
+            to = userRecord.email
+            sendEmail(to, msg, title, image_url, date)
             if (fullwaitlist.length === 0) {
                 await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
                 clearInterval(waitlistInterval)
