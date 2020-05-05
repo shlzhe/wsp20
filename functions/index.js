@@ -419,6 +419,7 @@ app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
         } else {
             adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image, date, duedate, null)
             await adminUtil.uninterested(interestedId)
+            await adminUtil.unwaitlist(req.decodedIdToken.uid, bookId)
             res.setHeader('Cache-Control', 'private')
             res.redirect('/b/borrowed')
         }
@@ -469,7 +470,6 @@ app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
     const latefee = req.body.latefee
     const duedate = req.body.duedate
     try {
-        console.log('+=++_+_+_+_+_+_+_+', msg)
         await adminUtil.unborrow(bookId, borrowId)
         await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image_url, date, duedate, latefee)
         const bCount = await getbCount(req) // bCount updated because of return
