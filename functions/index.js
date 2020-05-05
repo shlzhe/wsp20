@@ -109,7 +109,7 @@ app.post('/', auth, async (req, res) => {
             })
             res.setHeader('Cache-Control', 'private')
             res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount, bCount })
-        } catch (e) {
+        } catch (e) {   
             res.setHeader('Cache-Control', 'private')
             res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
         }
@@ -531,7 +531,7 @@ app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
     const msg = req.body.msg
     const latefee = req.body.latefee
     const duedate = req.body.duedate
-    try {
+    try { 
         await adminUtil.unborrow(bookId, borrowId, msg, title, image_url, date)
         await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image_url, date, duedate, latefee)
         const bCount = await getbCount(req) // bCount updated because of return
