@@ -81,8 +81,8 @@ function sendEmail(to, msg, title, image, date, duedate, latefee) {
             console.log("======================", error)
             return
         }
-        var data = JSON.stringify(data)
-        return res.send(`Email Sent! ${data}`);
+        console.log(data);
+        // return res.send(`Email Sent! ${data}`);
     });
 }
 

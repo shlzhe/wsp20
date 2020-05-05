@@ -62,19 +62,29 @@ app.get('/', auth, async (req, res) => {
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
     const coll = firebase.firestore().collection(Constants.COLL_BOOKS)
+    // const page = req.body.page
+
     try {
         let books = []
         const snapshot = await coll.orderBy("title").get()
+
         snapshot.forEach(doc => {
             books.push({ bookId: doc.id, data: doc.data() })
         })
+        // let last = snapshot.docs[snapshot.docs.length - 1]
+        // let lastDoc = last.data().title
+        // console.log('lastDoc+=================', lastDoc)
+        // books = books.slice(0,2)
+        // console.log("====================",books)
         res.setHeader('Cache-Control', 'private')
         res.render('storefront.ejs',
-            { error: false, books, user: req.decodedIdToken, iCount, bCount })
-    } catch (e) {
+            { error: false, books, user: req.decodedIdToken, iCount, bCount})
+    }
+    catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.render('storefront.ejs',
             { error: e, user: req.decodedIdToken, iCount, bCount })
+        console.log("/erorr+++++++++++++++++++++++", e)
     }
 })
 
@@ -83,6 +93,8 @@ app.post('/', auth, async (req, res) => {
     const sortBy = req.body.sortBy
     const order = req.body.order;
     const search = req.body.search
+    // const page = req.body.page
+    // const lastDoc = req.body.lastDoc
 
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
@@ -118,8 +130,6 @@ app.post('/', auth, async (req, res) => {
             snapshot3.forEach(doc => {
                 books.push({ id: doc.id, data: doc.data() })
             })
-
-            console.log('============books[]', books)
             res.setHeader('Cache-Control', 'private')
             res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount, bCount })
         } catch (e) {
@@ -128,30 +138,82 @@ app.post('/', auth, async (req, res) => {
             res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
         }
     }
-})
 
-app.post('/b/book', auth, async (req, res) => {
-    const iCount = await getiCount(req)
-    const bCount = await getbCount(req)
-    const coll1 = firebase.firestore().collection(Constants.COLL_BOOKS)
-    const bookId = req.body.bookId
+//     if(page === "previous") {
+//         try {
+//             let books = []
+//             // const osnapshot = await coll.orderBy("title").get()
+//             let lastDoc = req.body.lastDoc -1 
+//             // let last= osnapshot.docs[osnapshot.docs.length - 1]
+//             // lastDoc = last.data().title
+//             const snapshot = await coll.orderBy("title").startAt(lastDoc).limit(2).get()
+            
 
-    try {
-        let books = []
-        const snapshot = await coll1.get()
-        snapshot.forEach(doc => {
-            if (doc.id === bookId) {
-                avgRating = getAverage(doc.data().rating)
-                books.push({ bookId: doc.id, data: doc.data(), avgRating })
-            }
-        })
-        res.setHeader('Cache-Control', 'private')
-        res.render('book.ejs', { books, user: req.decodedIdToken, iCount, bCount })
-    } catch (e) {
-        res.setHeader('Cache-Control', 'private')
-        console.log("&&&&&&&&&&&&&&&&", e)
-        res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
-    }
+//             snapshot.forEach(doc => {
+//                 books.push({ bookId: doc.id, data: doc.data() })
+//             })
+//             console.log("lastDoc====================",)
+//             res.setHeader('Cache-Control', 'private')
+//             res.render('storefront.ejs',
+//                 { error: false, books, user: req.decodedIdToken, iCount, bCount, lastDoc })
+//         } 
+//         catch (e) {
+//             res.setHeader('Cache-Control', 'private')
+//             res.render('storefront.ejs',
+//                 { error: e, user: req.decodedIdToken, iCount, bCount, lastDoc })
+//                 console.log("prev error=========", e)
+//         }
+//     }
+    
+//     else if(page === "next") {
+//         try {
+//             let books = []
+//             let lastDoc = req.body.lastDoc
+//             const snapshot = await coll.orderBy("title").startAfter(lastDoc).limit(2).get()
+
+//             let last= snapshot.docs[snapshot.docs.length - 1]
+//             lastDoc = last.data().title
+
+//             snapshot.forEach(doc => {
+//                 books.push({ bookId: doc.id, data: doc.data() })
+//             })
+            
+//             console.log("====================",lastDoc)
+//             res.setHeader('Cache-Control', 'private')
+//             res.render('storefront.ejs',
+//                 { error: false, books, user: req.decodedIdToken, iCount, bCount, lastDoc})
+//         } 
+//         catch (e) {
+//             res.setHeader('Cache-Control', 'private')
+//             res.render('storefront.ejs',
+//                 { error: e, user: req.decodedIdToken, iCount, bCount, lastDoc})
+//             console.log("next error=========", e)
+//         }
+//     }
+// })
+
+// app.post('/b/book', auth, async (req, res) => {
+//     const iCount = await getiCount(req)
+//     const bCount = await getbCount(req)
+//     const coll1 = firebase.firestore().collection(Constants.COLL_BOOKS)
+//     const bookId = req.body.bookId
+
+//     try {
+//         let books = []
+//         const snapshot = await coll1.get()
+//         snapshot.forEach(doc => {
+//             if (doc.id === bookId) {
+//                 avgRating = getAverage(doc.data().rating)
+//                 books.push({ bookId: doc.id, data: doc.data(), avgRating })
+//             }
+//         })
+//         res.setHeader('Cache-Control', 'private')
+//         res.render('book.ejs', { books, user: req.decodedIdToken, iCount, bCount })
+//     } catch (e) {
+//         res.setHeader('Cache-Control', 'private')
+//         console.log("&&&&&&&&&&&&&&&&", e)
+//         res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
+//     }
 })
 
 app.get('/b/about', auth, async (req, res) => {
@@ -444,7 +506,7 @@ app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
         await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image, date, duedate, latefee)
         const bCount = await getbCount(req) // bCount updated because of return
         res.setHeader('Cache-Control', 'private')
-        res.render('review.ejs', { image_url, title, bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
+        return res.render('review.ejs', { image_url, title, bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
     } catch (e) {
         console.log('++++++++++++++++++++', e)
         res.setHeader('Cache-Control', 'private')

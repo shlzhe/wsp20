@@ -9,6 +9,34 @@
     <%- include('partials/header.ejs')%>
 
     <title>Library</title>
+
+    <style>
+        .center {
+            text-align: center;
+        }
+
+        .pagination {
+            display: inline-block;
+        }
+
+        .pagination a {
+            color: black;
+            float:left;
+            padding: 8px 16px;
+            text-decoration: none;
+            transition: background-color .3s;
+
+        }
+
+        .pagination a.active {
+            background-color: dodgerblue;
+            color: white;
+        }
+
+        .pagination a:hover:not(.active) {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 
 <body>
@@ -51,61 +79,8 @@
     <% } %>
     <% } %>
 
+
     <%- include('partials/scripts.ejs')%>
 </body>
 
 </html>
-
-<!-- <script>
-    document.getElementById("search").addEventListener('keyup', (e) => {
-        console.log(document.getElementById("search").value)
-    })
-    document.getElementById("search").addEventListener('DOMContentLoaded', async function() {
-            console.log("DOM", document.getElementById("search").value)
-            const db = firebase.firestore();
-            const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
-    
-        const searchByName = async ({
-              search = '',
-              limit = 50,
-              lastNameOfLastPerson = ''
-            } = {}) => {
-              const snapshot = await collection
-                .where('keywords', 'array-contains', search.toLowerCase())
-                .orderBy('name.last')
-                .startAfter(lastNameOfLastPerson)
-                .limit(limit)
-                .get();
-              return snapshot.docs.reduce((acc, doc) => {
-                const name = doc.data().name;
-                return acc.concat(`
-                  <tr>
-                    <td>${name.last}</td>
-                    <td>${name.first}</td>
-                    <td>${name.middle}</td>
-                    <td>${name.suffix}</td>
-                  </tr>`);
-              }, '');
-            };
-    
-            const textBoxSearch = document.querySelector('#textBoxSearch');
-    
-            const rowsPeople = document.querySelector('#rowsPeople');
-            rowsPeople.innerHTML = await searchByName();
-    
-            textBoxSearch.addEventListener('keyup', async (e) => rowsPeople.innerHTML = await searchByName({search: e.target.value}));
-    
-            // async function lazyLoad() {
-            //   const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) === window.scrollY; 
-            //   if (scrollIsAtTheBottom) {
-            //     const lastNameOfLastPerson = rowsPeople.lastChild.firstElementChild.textContent;
-    
-            //     rowsPeople.innerHTML += await searchByName({
-            //       search: textBoxSearch.value,
-            //       lastNameOfLastPerson: lastNameOfLastPerson
-            //     });
-            //   }
-            // }
-            window.addEventListener('scroll', lazyLoad);
-          });
-</script> -->
