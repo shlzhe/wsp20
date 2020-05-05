@@ -64,6 +64,8 @@
         <h6>2. I will pay whatever fines I owe, if any</h6>
         <br>
         <form action="/b/review" method="post" style="display:inline" onSubmit="return pay('<%=b.difference%>')">
+            <input type="hidden" name="image_url" value="<%= b.data.image_url %>">
+            <input type="hidden" name="title" value="<%= b.data.title %>">
             <input type="hidden" name="bookId" value="<%= b.bookId %>">
             <input type="hidden" name="borrowId" value="<%= b.borrowId %>">
             <input type="hidden" name="title" value="<%= b.data.title%>">
@@ -83,6 +85,9 @@
         </form>
         <form action="/b/borrowed" method="get" style="display:inline">
             <button type="submit" class="btn btn-primary">Cancel</button>
+        </form>
+        <form action="/b/lost" method="get" style="display:inline">
+            <button type="submit" class="btn btn-primary">I lost the book</button>
         </form>
     </div>
     <% } %>

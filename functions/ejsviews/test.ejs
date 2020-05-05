@@ -14,26 +14,25 @@
 <body>
 
     <h1>Review</h1>
-    <h3>Please rate the book: </h3>
+    <div style="text-align: center; vertical-align: middle;">
+        <h3>Please rate the book: </h3>
+        <div id='rating'>
+            <span id="1"></span>
+            <span id="2"></span>
+            <span id="3"></span>
+            <span id="4"></span>
+            <span id="5"></span>
+        </div>
 
-    <div id='rating'>
-        <span id="r1"></span>
-        <span id="r2"></span>
-        <span id="r3"></span>
-        <span id="r4"></span>
-        <span id="r5"></span>
+        <form action="/b/confirmreturn" method="post" style="display: inline;">
+            <input hidden id="selection" name="rating" value="0">
+            <button type="submit" class="btn btn-primary">Rate</button>
+        </form>
+        <form action="/b/confirmreturn" method="post" style="display: inline;">
+            <input type="number" name="rating" value="0" hidden>
+            <button type="submit" class="btn btn-secondary">No Thanks</button>
+        </form>
     </div>
-
-    <form action="/b/confirmreturn" method="post" style="display: inline;">
-        <input hidden name="rating">
-        <input type="number" name="rating" style="width:3em"> Stars
-        <br><br>
-        <button type="submit" class="btn btn-primary">Rate</button>
-    </form>
-    <form action="/b/confirmreturn" method="post" style="display: inline;">
-        <input type="number" name="rating" value="0" hidden>
-        <button type="submit" class="btn btn-secondary">No Thanks</button>
-    </form>
 
     <%- include('partials/scripts.ejs')%>
 </body>
@@ -51,6 +50,7 @@
 
     #rating span.active::before {
         content: "★";
+        color: gold;
     }
 
     #rating span:hover {
@@ -60,10 +60,13 @@
 
 <script>
     document.querySelector('#rating').addEventListener('click', function (e) {
+        if (e.target.id == "rating") return
         let action = 'add';
         for (const span of this.children) {
             span.classList[action]('active');
             if (span === e.target) action = 'remove';
         }
+        document.getElementById("selection").setAttribute("value", e.target.id)
     });
+
 </script>

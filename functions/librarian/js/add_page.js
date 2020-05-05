@@ -82,8 +82,8 @@ async function addBook() {
     isbnErrorTag.innerHTML = validate_isbn(isbn)
     imageErrorTag.innerHTML = !glImageFile2Add ? 'Error: No image selected' : null
 
-    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || publisherErrorTag.innerHTML || 
-        summaryErrorTag.innerHTML || yearErrorTag.innerHTML || isbnErrorTag.innerHTML || 
+    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || publisherErrorTag.innerHTML ||
+        summaryErrorTag.innerHTML || yearErrorTag.innerHTML || isbnErrorTag.innerHTML ||
         imageErrorTag.innerHTML) {
         return
     }

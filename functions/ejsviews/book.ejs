@@ -46,7 +46,22 @@
             </tr>
             <tr>
                 <td>Rating</td>
-                <td><%= b.data.rating %> (<%= b.data.rating.length %> reviews)</td>
+                <td>
+                    <% if(b.data.rating) { %>
+                    <div class="containerdiv">
+                        <div>
+                            <img src="https://image.ibb.co/jpMUXa/stars_blank.png" style="max-width: 100px;">
+                        </div>
+                        <div class="cornerimage" id="rwidth">
+                            <span id="r" hidden><%= b.avgRating %></span>
+                            <img src="https://image.ibb.co/caxgdF/stars_full.png" style="max-width: 100px;">
+                        </div>
+                    </div>&nbsp;
+                    (<%= b.data.rating.length %> reviews)
+                    <% } else { %>
+                    <%= b.avgRating %>
+                    <% } %>
+                </td>
             </tr>
         </table>
         <form action="/" method="get" style="display:inline">
@@ -66,12 +81,22 @@
 
 </html>
 
-<script>
-    function avg(array) {
-        let total = 0
-        array.forEach(element => {
-            total += element
-        });
-        return total / array.length
+<style>
+    .containerdiv {
+        border: 0;
+        float: left;
+        position: relative;
     }
+
+    .cornerimage {
+        border: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+    }
+</style>
+
+<script>
+    document.getElementById("rwidth").style.width = document.getElementById("r").innerHTML
 </script>
