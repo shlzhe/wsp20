@@ -57,6 +57,7 @@
                             <img src="https://image.ibb.co/caxgdF/stars_full.png" style="max-width: 100px;">
                         </div>
                     </div>&nbsp;
+                    <%= parseFloat((b.avgRating/20).toFixed(2)) %>/5
                     (<%= b.data.rating.length %> reviews)
                     <% } else { %>
                     <%= b.avgRating %>
@@ -98,5 +99,5 @@
 </style>
 
 <script>
-    document.getElementById("rwidth").style.width = document.getElementById("r").innerHTML
+    document.getElementById("rwidth").style.width = document.getElementById("r").innerHTML + "%"
 </script>

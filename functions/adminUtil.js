@@ -26,14 +26,16 @@ function sendEmail(to, msg, title, image, date, duedate, latefee) {
         html: ``,
     };
 
-    if(msg === "return") {
+    if (msg === "return") {
         mailOptions = {
             from: `no-reply@wsp20.com`,
             to,
             subject: 'Book Return Confirmation',
             html: `
+                <head>
                 <h4>${date}</h4>
-                <h2>This email is to show that you have successfully returned: </h2><br>
+                <h2>This email verifies that you have successfully returned: </h2><br>
+                </head>
                 <body>
                 <img src="${image}" width="170"/>
                 <h3>Title: ${title} </h3>
@@ -41,37 +43,73 @@ function sendEmail(to, msg, title, image, date, duedate, latefee) {
         };
     }
 
-    else if(msg === "returnlate") {
+    else if (msg === "returnlate") {
         mailOptions = {
             from: `no-reply@wsp20.com`,
             to,
-            subject: 'LATE- Book Return Confirmation',
-            html: `
-                <h4>${date}</h4>
-                <h2>This email is to show that you have returned your books late </h2><br>
-                <h3>You have been charged $${latefee} to your account!</h3>
-                <h3>Due date: ${duedate} </h3>
-                <body>
-                <img src="${image}" width="170"/>
-                <h3>Title: ${title} </h3>
-                </body>`
-        };
-    }
-
-    else if(msg === "borrow") {
-        mailOptions = {
-            from: `no-reply@wsp20.com`,
-            to,
-            subject: 'Borrowed Books Confirmation',
+            subject: 'LATE - Book Return Confirmation',
             html: `
                 <head>
                 <h4>${date}</h4>
-                <h2>This email is to show that you have successfully borrowed: </h2><br>
+                <h2>This email verifies that you have returned a book late </h2><br>
+                <h3>You have been charged $${latefee} to your account!</h3>
+                <h3>Due date: ${duedate} </h3>
+                </head>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3>
+                </body>`
+        };
+    }
+
+    else if (msg === "borrow") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'Book Borrow Confirmation',
+            html: `
+                <head>
+                <h4>${date}</h4>
+                <h2>This email verifies that you have successfully borrowed: </h2><br>
                 </head>
                 <body>
                 <img src="${image}" width="170"/>
                 <h3>Title: ${title} </h3>
                 <h3>Due date: ${duedate} </h3>
+                </body>`
+        };
+    }
+
+    else if (msg === "lost") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'LOST - Book Return Confirmation',
+            html: `
+                <head>
+                <h4>${date}</h4>
+                <h2>This email verifies that you reported the loss of a book: </h2><br>
+                <h3>You have been charged $${latefee} to your account!</h3>
+                </head>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3>
+                </body>`
+        };
+    }
+
+    else if (msg === "admin") {
+        console.log("SENDING ++++++++++++++++++++ admin")
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'Message from System Admin',
+            html: `
+                <head>
+                <h2>This message is from System Admin of wsp20library: </h2><br>
+                </head>
+                <body>
+                <h3>${title} </h3>
                 </body>`
         };
     }
@@ -189,23 +227,38 @@ async function getWaitlist(uid) {
     }
 }
 
-async function waitlist(data) {
-    const tdate = new Date()
-    data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
+async function waitlist(uid, bookId) {
     try {
-        let found = false
-        const waitlist = await getWaitlist(data.uid)
-        waitlist.forEach(i => {
-            if (i.data.bookId === data.bookId) {
-                found = true
-            }
-        })
-        if (!found) {
-            const collection = admin.firestore().collection(Constants.COLL_WAITLIST)
-            await collection.doc().set(data)
+        console.log(uid, "^^^^^^^^^^^^^^^^^^", bookId)
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        book = await books.doc(bookId).get()
+        fullwaitlist = book.data().waitlist
+        if (fullwaitlist) fullwaitlist.push(uid)
+        else fullwaitlist = [uid]
+        await books.doc(bookId).update({ waitlist: fullwaitlist })
+    } catch (e) {
+        console.log("===========================", e)
+        throw e
+    }
+}
+
+async function unwaitlist(uid, bookId) {
+    try {
+        console.log(uid, "^^^^^^^^^^^^^^^^^^", bookId)
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        book = await books.doc(bookId).get()
+        fullwaitlist = book.data().waitlist
+        if (fullwaitlist) {
+            fullwaitlist.forEach(item => {
+                if (item === uid) fullwaitlist.splice(fullwaitlist.indexOf(item), 1)
+            })
+            await books.doc(bookId).update({ waitlist: fullwaitlist })
+        }
+        else {
+            console.log("==================FAILED TO UNWAITLIST")
         }
     } catch (e) {
-        console.log("================" + e)
+        console.log("===========================", e)
         throw e
     }
 }
@@ -231,10 +284,16 @@ async function borrow(bookId, data) {
 
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        const book = await books.doc(bookId).get()
+        if (book.data().status !== Constants.STATUS_AVAILABLE) {
+            return false
+        }
         await books.doc(bookId).update({ status: Constants.STATUS_UNAVAILABLE })
 
         const collection = admin.firestore().collection(Constants.COLL_BORROWED)
         await collection.doc().set(data)
+
+        return true
     } catch (e) {
         throw e
     }
@@ -243,10 +302,22 @@ async function borrow(bookId, data) {
 async function unborrow(bookId, borrowId) {
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
-        await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
+        await books.doc(bookId).update({ status: Constants.STATUS_WAITLISTED })
 
         const collection = admin.firestore().collection(Constants.COLL_BORROWED)
         await collection.doc(borrowId).delete()
+        var waitlistInterval = setInterval(async () => {
+            book = await books.doc(bookId).get()
+            fullwaitlist = book.data().waitlist
+            //sendemail to 
+            fullwaitlist.splice(0, 1)
+            console.log("===========================timesup")
+            if (fullwaitlist.length === 0) {
+                await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
+                clearInterval(waitlistInterval)
+            }
+            await books.doc(bookId).update({ waitlist: fullwaitlist })
+        }, 1000 * 60 * parseFloat(Constants.SETTINGS.WAITLIST))
     } catch (e) {
         console.log("===========================", e)
         throw e
@@ -282,5 +353,6 @@ module.exports = {
     sendEmail,
     getWaitlist,
     waitlist,
+    unwaitlist,
     review,
 }

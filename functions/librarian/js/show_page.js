@@ -39,8 +39,8 @@ async function show_page_secured() {
         <div id="${p.docId}" class="card" style="width: 18rem; display: inline-block">
             <img src="${p.image_url}" class="card-img-top" style="height:18rem; object-fit: contain;">
             <div class="card-body">
-            <h5 class="card-title">${p.title}</h5>
-            <p class="card-text">${p.author}<br/></p>
+            <h5 class="card-title" style="white-space:nowrap; overflow:hidden">${p.title}</h5>
+            <p class="card-text">${p.author}</p>
             <button class="btn btn-primary" type="button"
                 onclick="editProduct(${index})">Edit</button>
             <button class="btn btn-danger" type="button"
@@ -85,7 +85,7 @@ function editProduct(index) {
         <p id="isbn_error" style="color:red" />
     </div>
     Current Image:<br>
-    <img src="${p.image_url}"><br>
+    <img src="${p.image_url}" style="width:18rem"><br>
     <div class="form-group">
         New Image: <input type="file" id="imageButton" value="upload" />
     </div>
