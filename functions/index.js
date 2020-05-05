@@ -134,30 +134,22 @@ app.post('/b/book', auth, async (req, res) => {
     const iCount = await getiCount(req)
     const bCount = await getbCount(req)
     const coll1 = firebase.firestore().collection(Constants.COLL_BOOKS)
-    // const coll2 = firebase.firestore().collection(Constants.COLL_BORROWED)
     const bookId = req.body.bookId
 
     try {
         let books = []
         const snapshot = await coll1.get()
         snapshot.forEach(doc => {
-            if (doc.id === bookId) books.push({ bookId: doc.id, data: doc.data() })
+            if (doc.id === bookId) {
+                avgRating = getAverage(doc.data().rating)
+                books.push({ bookId: doc.id, data: doc.data(), avgRating })
+            }
         })
-        /*if (req.user) {
-            var times = 0, qty = 0
-            const snapshot2 = await coll2.where("uid", "==", req.user.uid).get()
-            snapshot2.forEach(doc => {
-                for (let i = 0; i < doc.data().cart.length; i++)
-                    if (doc.data().cart[i].product.id === id) {
-                        times++
-                        qty += parseInt(doc.data().cart[i].qty)
-                    }
-            })
-        }*/
         res.setHeader('Cache-Control', 'private')
         res.render('book.ejs', { books, user: req.decodedIdToken, iCount, bCount })
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
+        console.log("&&&&&&&&&&&&&&&&", e)
         res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
     }
 })
@@ -424,13 +416,15 @@ app.post('/b/return', authAndRedirectSignIn, async (req, res) => {
 
 app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
     const iCount = await getiCount(req)
+    const image_url = req.body.image_url
+    const title = req.body.title
     const bookId = req.body.bookId
     const borrowId = req.body.borrowId
     try {
         await adminUtil.unborrow(bookId, borrowId)
         const bCount = await getbCount(req) // bCount updated because of return
         res.setHeader('Cache-Control', 'private')
-        res.render('review.ejs', { bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
+        res.render('review.ejs', { image_url, title, bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         return res.render('borrowed.ejs',
@@ -616,4 +610,14 @@ async function getbCount(req) {
     } catch (e) {
         return 0
     }
+}
+
+function getAverage(array) {
+    if (!array) return "No reviews yet"
+    let total = 0
+    array.forEach(element => {
+        total += parseInt(element)
+    });
+    let avg = total / array.length
+    return avg * 20 + "%"
 }

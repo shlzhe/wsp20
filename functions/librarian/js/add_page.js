@@ -55,11 +55,11 @@ function add_page_secured() {
     })
 }
 
-const Constants = require('../../myconstants.js')
+//const Constants = require('../../myconstants.js')
 
 async function addBook() {
-
-    const status = Constants.STATUS_AVAILABLE
+    //const status = Constants.STATUS_AVAILABLE
+    const status = 0
     const title = document.getElementById('title').value
     const author = document.getElementById('author').value
     const publisher = document.getElementById('publisher').value
@@ -83,8 +83,8 @@ async function addBook() {
     isbnErrorTag.innerHTML = validate_isbn(isbn)
     imageErrorTag.innerHTML = !glImageFile2Add ? 'Error: No image selected' : null
 
-    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || publisherErrorTag.innerHTML || 
-        summaryErrorTag.innerHTML || yearErrorTag.innerHTML || isbnErrorTag.innerHTML || 
+    if (titleErrorTag.innerHTML || authorErrorTag.innerHTML || publisherErrorTag.innerHTML ||
+        summaryErrorTag.innerHTML || yearErrorTag.innerHTML || isbnErrorTag.innerHTML ||
         imageErrorTag.innerHTML) {
         return
     }
