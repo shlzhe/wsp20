@@ -8,7 +8,7 @@ function add_page_secured() {
     glPageContent.innerHTML = '<h1>Add Page</h1>'
     glPageContent.innerHTML += `
         <a href='/home' class="btn btn-primary">Home</a>    
-        <a href='/show' class="btn btn-primary">Show Products</a>
+        <a href='/show' class="btn btn-primary">Show Books</a>
         <div class="form-group">
             Title: <input class="form-control" type="text" id="title" />
             <p id="title_error" style="color:red" />
@@ -106,7 +106,7 @@ async function addBook() {
 
     } catch (e) {
         glPageContent.innerHTML = `
-            <h1>Cannot add a product</h1>
+            <h1>Cannot add a book</h1>
             ${JSON.stringify(e)}
         `
         console.log(e)

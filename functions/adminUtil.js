@@ -326,23 +326,31 @@ async function unborrow(bookId, borrowId, msg, title, image_url, date) {
         await collection.doc(borrowId).delete()
         book = await books.doc(bookId).get()
         fullwaitlist = book.data().waitlist
-        userRecord = await admin.auth().getUser(fullwaitlist[0])
-        to = userRecord.email
-        sendEmail(to, msg, title, image_url, date)
-        var waitlistInterval = setInterval(async () => {
-            fullwaitlist.splice(0, 1)
-            console.log("===========================timesup")
-            book = await books.doc(bookId).get()
-            fullwaitlist = book.data().waitlist
+
+        if (!fullwaitlist || fullwaitlist.length === 0) {
+            await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
+        }
+        else {
             userRecord = await admin.auth().getUser(fullwaitlist[0])
             to = userRecord.email
             sendEmail(to, msg, title, image_url, date)
-            if (fullwaitlist.length === 0) {
-                await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
-                clearInterval(waitlistInterval)
-            }
-            await books.doc(bookId).update({ waitlist: fullwaitlist })
-        }, 1000 * 60 * parseFloat(Constants.SETTINGS.WAITLIST))
+
+            var waitlistInterval = setInterval(async () => {
+                fullwaitlist.splice(0, 1)
+                console.log("===========================timesup")
+                if (fullwaitlist.length === 0) {
+                    await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
+                    clearInterval(waitlistInterval)
+                    return
+                }
+                book = await books.doc(bookId).get()
+                fullwaitlist = book.data().waitlist
+                userRecord = await admin.auth().getUser(fullwaitlist[0])
+                to = userRecord.email
+                sendEmail(to, msg, title, image_url, date)
+                await books.doc(bookId).update({ waitlist: fullwaitlist })
+            }, 1000 * 60 * parseInt(Constants.SETTINGS.WAITLIST))
+        }
     } catch (e) {
         console.log("===========================", e)
         throw e
