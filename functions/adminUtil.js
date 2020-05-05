@@ -17,7 +17,7 @@ var transporter = nodemailer.createTransport({
     }
 });
 
-function sendEmail(to, msg, title, image, date) {
+function sendEmail(to, msg, title, image, date, duedate, latefee) {
 
     var mailOptions = {
         from: `no-reply@wsp20.com`,
@@ -32,8 +32,12 @@ function sendEmail(to, msg, title, image, date) {
             to,
             subject: 'Book Return Confirmation',
             html: `
-                <h2>You have successfully returned on ${date}</h2><br>
-                <h4> ${title} </h4>`
+                <h4>${date}</h4>
+                <h2>This email is to show that you have successfully returned: </h2><br>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3>
+                </body>`
         };
     }
 
@@ -43,9 +47,14 @@ function sendEmail(to, msg, title, image, date) {
             to,
             subject: 'LATE- Book Return Confirmation',
             html: `
-                <h2>You have returned your book late on ${date}</h2><br>
-                <h3>You have been charged $ to your account</h3>
-                <h4> ${title} </h4>`
+                <h4>${date}</h4>
+                <h2>This email is to show that you have returned your books late </h2><br>
+                <h3>You have been charged $${latefee} to your account!</h3>
+                <h3>Due date: ${duedate} </h3>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3>
+                </body>`
         };
     }
 
@@ -53,12 +62,17 @@ function sendEmail(to, msg, title, image, date) {
         mailOptions = {
             from: `no-reply@wsp20.com`,
             to,
-            subject: 'Your Borrowed Books',
+            subject: 'Borrowed Books Confirmation',
             html: `
+                <head>
                 <h4>${date}</h4>
                 <h2>This email is to show that you have successfully borrowed: </h2><br>
-                <p>${image}</p>
-                <h4> ${title} </h4>`
+                </head>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3>
+                <h3>Due date: ${duedate} </h3>
+                </body>`
         };
     }
 

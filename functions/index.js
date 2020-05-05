@@ -378,6 +378,7 @@ app.post('/b/borrow', authAndRedirectSignIn, async (req, res) => {
 app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
     const bookId = req.body.bookId
     const title = req.body.title
+    const duedate = req.body.duedate
     const tdate = new Date()
     const date = firebase.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate())).toDate()
     const msg = req.body.msg
@@ -385,13 +386,14 @@ app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
     try {
         const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
         const doc = await collection.doc(bookId).get()
+        const image = doc.data().image_url
         const data = {
             uid: req.decodedIdToken.uid,
             bookId
         }
         await adminUtil.borrow(bookId, data)
-        console.log('+=++_+_+_+_+_+_+_+', msg)
-        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, doc.image, date)
+        console.log('===========++_+_+_+_+_+_+_+', msg)
+        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image, date, duedate, null)
         await adminUtil.uninterested(interestedId)
         res.setHeader('Cache-Control', 'private')
         res.redirect('/b/borrowed')
@@ -432,12 +434,21 @@ app.post('/b/return', authAndRedirectSignIn, async (req, res) => {
 
 app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
     const iCount = await getiCount(req)
+    const title = req.body.title
+    const tdate = new Date()
+    const date = firebase.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate())).toDate()
     const bookId = req.body.bookId
     const borrowId = req.body.borrowId
+    const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
+    const doc = await collection.doc(bookId).get()
+    const image = doc.data().image_url   
+    const msg = req.body.msg
+    const latefee = req.body.latefee
+    const duedate = req.body.duedate
     try {
         console.log('+=++_+_+_+_+_+_+_+', msg)
         await adminUtil.unborrow(bookId, borrowId)
-        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, null, date)
+        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image, date, duedate, latefee)
         const bCount = await getbCount(req) // bCount updated because of return
         res.setHeader('Cache-Control', 'private')
         res.render('review.ejs', { bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
