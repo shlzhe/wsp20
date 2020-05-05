@@ -13,6 +13,7 @@ module.exports = {
     COLL_WAITLIST: 'waitlist',
     STATUS_AVAILABLE: 0,
     STATUS_UNAVAILABLE: 1,
+    STATUS_WAITLISTED: 2,
     SYSADMINEMAIL: 'sysadmin@test.com',
     LIBRARIANEMAIL: 'prodadmin@test.com',
     SETTINGS

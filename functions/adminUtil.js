@@ -32,8 +32,7 @@ function sendEmail(to) {
             console.log("======================", error)
             return
         }
-        var data = JSON.stringify(data)
-        return res.send(`Sent! ${data}`);
+        //return res.send(`Sent! ${data}`);
     });
 }
 
@@ -140,23 +139,38 @@ async function getWaitlist(uid) {
     }
 }
 
-async function waitlist(data) {
-    const tdate = new Date()
-    data.timestamp = admin.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate() + 0))
+async function waitlist(uid, bookId) {
     try {
-        let found = false
-        const waitlist = await getWaitlist(data.uid)
-        waitlist.forEach(i => {
-            if (i.data.bookId === data.bookId) {
-                found = true
-            }
-        })
-        if (!found) {
-            const collection = admin.firestore().collection(Constants.COLL_WAITLIST)
-            await collection.doc().set(data)
+        console.log(uid, "^^^^^^^^^^^^^^^^^^", bookId)
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        book = await books.doc(bookId).get()
+        fullwaitlist = book.data().waitlist
+        if (fullwaitlist) fullwaitlist.push(uid)
+        else fullwaitlist = [uid]
+        await books.doc(bookId).update({ waitlist: fullwaitlist })
+    } catch (e) {
+        console.log("===========================", e)
+        throw e
+    }
+}
+
+async function unwaitlist(uid, bookId) {
+    try {
+        console.log(uid, "^^^^^^^^^^^^^^^^^^", bookId)
+        const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        book = await books.doc(bookId).get()
+        fullwaitlist = book.data().waitlist
+        if (fullwaitlist) {
+            fullwaitlist.forEach(item => {
+                if (item === uid) fullwaitlist.splice(fullwaitlist.indexOf(item),1)
+            })
+            await books.doc(bookId).update({ waitlist: fullwaitlist })
+        }
+        else {
+            console.log("==================FAILED TO UNWAITLIST")
         }
     } catch (e) {
-        console.log("================" + e)
+        console.log("===========================", e)
         throw e
     }
 }
@@ -182,10 +196,16 @@ async function borrow(bookId, data) {
 
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
+        const book = await books.doc(bookId).get()
+        if (book.data().status !== Constants.STATUS_AVAILABLE) {
+            return false
+        }
         await books.doc(bookId).update({ status: Constants.STATUS_UNAVAILABLE })
 
         const collection = admin.firestore().collection(Constants.COLL_BORROWED)
         await collection.doc().set(data)
+
+        return true
     } catch (e) {
         throw e
     }
@@ -194,10 +214,22 @@ async function borrow(bookId, data) {
 async function unborrow(bookId, borrowId) {
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
-        await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
+        await books.doc(bookId).update({ status: Constants.STATUS_WAITLISTED })
 
         const collection = admin.firestore().collection(Constants.COLL_BORROWED)
         await collection.doc(borrowId).delete()
+        var waitlistInterval = setInterval(async () => {
+            book = await books.doc(bookId).get()
+            fullwaitlist = book.data().waitlist
+            //sendemail to 
+            fullwaitlist.splice(0, 1)
+            console.log("===========================timesup")
+            if (fullwaitlist.length === 0) {
+                await books.doc(bookId).update({ status: Constants.STATUS_AVAILABLE })
+                clearInterval(waitlistInterval)
+            }
+            await books.doc(bookId).update({ waitlist: fullwaitlist })
+        }, 1000 * 60 * parseFloat(Constants.SETTINGS.WAITLIST))
     } catch (e) {
         console.log("===========================", e)
         throw e
@@ -233,5 +265,6 @@ module.exports = {
     sendEmail,
     getWaitlist,
     waitlist,
+    unwaitlist,
     review,
 }

@@ -191,6 +191,7 @@ app.get('/b/signin', async (req, res) => {
 
 app.post('/b/signin', async (req, res) => {
     const iCount = await getiCount(req)
+    const bCount = await getbCount(req)
     const email = req.body.email
     const password = req.body.password
     const auth = firebase.auth()
@@ -225,7 +226,7 @@ app.post('/b/signin', async (req, res) => {
         }
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
-        res.render('signin', { error: e, user: null, iCount })
+        res.render('signin', { error: e, user: null, iCount, bCount })
     }
 })
 
@@ -267,10 +268,17 @@ app.get('/b/interested', authAndRedirectSignIn, async (req, res) => {
         const maxed = m.length >= Constants.SETTINGS.BOOKCOUNT ? true : false
         const b = await adminUtil.getInterested(req.decodedIdToken.uid)
         const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
-        for (let i = 0; i < b.length; i++) {
+        const snapshot = await collection.get()
+        snapshot.forEach(doc => {
+            for (let i = 0; i < b.length; i++) {
+                if (b[i].data.bookId === doc.id)
+                    interested.push({ interestedId: b[i].id, bookId: doc.id, book: doc.data() })
+            }
+        })
+        /*for (let i = 0; i < b.length; i++) {
             const doc = await collection.doc(b[i].data.bookId).get()
             interested.push({ interestedId: b[i].id, bookId: doc.id, book: doc.data() })
-        }
+        }*/
         res.setHeader('Cache-Control', 'private')
         res.render('interested.ejs', { message: false, interested, user: req.decodedIdToken, iCount, bCount, maxed })
     } catch (e) {
@@ -306,15 +314,17 @@ app.post('/b/add2interested', auth, async (req, res) => {
     }
 })
 
-app.post('/b/remove', async (req, res) => {
+app.post('/b/remove', authAndRedirectSignIn, async (req, res) => {
     const bookId = req.body.bookId
     const interestedId = req.body.interestedId
     try {
         await adminUtil.uninterested(interestedId)
+        await adminUtil.unwaitlist(req.decodedIdToken.uid, bookId)
         res.setHeader('Cache-Control', 'private')
         res.redirect('/b/interested')
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
+        console.log("===========================", e)
         res.send(JSON.stringify(e))
     }
 })
@@ -329,15 +339,19 @@ app.get('/b/borrowed', authAndRedirectSignIn, async (req, res) => {
     try {
         const b = await adminUtil.getBorrowed(req.decodedIdToken)
         const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
-        for (let i = 0; i < b.length; i++) {
-            const doc = await collection.doc(b[i].data.bookId).get()
-            const duedate = b[i].data.duedate.toDate()
-            borrowed.push({
-                borrowId: b[i].id, bookId: doc.id, book: doc.data(), duedate,
-                late: curdate.getTime() - duedate.getTime() > 0 ? true : false
-                //late: new Date().getTime() - duedate.getTime() > 0 ? true : false
-            })
-        }
+        const snapshot = await collection.get()
+        snapshot.forEach(doc => {
+            for (let i = 0; i < b.length; i++) {
+                if (b[i].data.bookId === doc.id) {
+                    const duedate = b[i].data.duedate.toDate()
+                    borrowed.push({
+                        borrowId: b[i].id, bookId: doc.id, book: doc.data(), duedate,
+                        late: curdate.getTime() - duedate.getTime() > 0 ? true : false
+                        //late: new Date().getTime() - duedate.getTime() > 0 ? true : false
+                    })
+                }
+            }
+        })
         res.setHeader('Cache-Control', 'private')
         res.render('borrowed.ejs', { message: false, borrowed, user: req.decodedIdToken, iCount, bCount })
     } catch (e) {
@@ -368,6 +382,8 @@ app.post('/b/borrow', authAndRedirectSignIn, async (req, res) => {
 })
 
 app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
+    const iCount = await getiCount(req)
+    const bCount = await getbCount(req)
     const bookId = req.body.bookId
     const interestedId = req.body.interestedId
     try {
@@ -375,10 +391,28 @@ app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
             uid: req.decodedIdToken.uid,
             bookId
         }
-        await adminUtil.borrow(bookId, data)
-        await adminUtil.uninterested(interestedId)
-        res.setHeader('Cache-Control', 'private')
-        res.redirect('/b/borrowed')
+        avail = await adminUtil.borrow(bookId, data)
+        if (!avail) {
+            const message = "Book is currently unavailable. Waitlist to get notified when it is available"
+            const m = await adminUtil.getBorrowed(req.decodedIdToken)
+            const maxed = m.length >= Constants.SETTINGS.BOOKCOUNT ? true : false
+            let interested = []
+            const b = await adminUtil.getInterested(req.decodedIdToken.uid)
+            const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
+            const snapshot = await collection.get()
+            snapshot.forEach(doc => {
+                for (let i = 0; i < b.length; i++) {
+                    if (b[i].data.bookId === doc.id)
+                        interested.push({ interestedId: b[i].id, bookId: doc.id, book: doc.data() })
+                }
+            })
+            res.setHeader('Cache-Control', 'private')
+            res.render('interested.ejs', { message, interested, user: req.decodedIdToken, iCount, bCount, maxed })
+        } else {
+            await adminUtil.uninterested(interestedId)
+            res.setHeader('Cache-Control', 'private')
+            res.redirect('/b/borrowed')
+        }
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.send("Failed to borrow" + e)
@@ -424,7 +458,7 @@ app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
         await adminUtil.unborrow(bookId, borrowId)
         const bCount = await getbCount(req) // bCount updated because of return
         res.setHeader('Cache-Control', 'private')
-        res.render('review.ejs', { image_url, title, bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
+        return res.render('review.ejs', { image_url, title, bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         return res.render('borrowed.ejs',
@@ -450,11 +484,12 @@ app.post('/b/confirmreturn', authAndRedirectSignIn, async (req, res) => {
 app.post('/b/waitlist', authAndRedirectSignIn, async (req, res) => {
     const bookId = req.body.bookId
     try {
-        const data = {
+        /*const data = {
             uid: req.decodedIdToken.uid,
             bookId
         }
-        await adminUtil.waitlist(data)
+        await adminUtil.waitlist(data)*/
+        await adminUtil.waitlist(req.decodedIdToken.uid, bookId)
         res.setHeader('Cache-Control', 'private')
         res.redirect('/b/interested')
     } catch (e) {
@@ -619,5 +654,5 @@ function getAverage(array) {
         total += parseInt(element)
     });
     let avg = total / array.length
-    return avg * 20 + "%"
+    return avg * 20
 }

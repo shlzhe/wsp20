@@ -49,11 +49,18 @@
                 <td width="25%">
                     <% if(!maxed) { %>
 
-                    <% if(interested[i].book.status === 0) { %>
+                    <% if(interested[i].book.status === 0 || interested[i].book.status === 2 && interested[i].book.waitlist && interested[i].book.waitlist[0] === user.uid) { %>
                     <form action="/b/borrow" method="post" style="display: inline-block;">
                         <input type="hidden" name="bookId" value="<%= interested[i].bookId %>">
                         <input type="hidden" name="interestedId" value="<%= interested[i].interestedId %>">
                         <button type="submit" class="btn btn-primary">Borrow</button>
+                    </form>
+                    <% } else if(interested[i].book.status !== 0 && interested[i].book.waitlist && interested[i].book.waitlist.includes(user.uid)) { %>
+                    <form action="/b/waitlist" method="post" style="display: inline-block;">
+                        <input type="hidden" name="bookId" value="<%= interested[i].bookId %>">
+                        <input type="hidden" name="interestedId" value="<%= interested[i].interestedId %>">
+                        <button type="submit" class="btn btn-secondary" disabled
+                            style="cursor: default;">Waitlisted</button>
                     </form>
                     <% } else { %>
                     <form action="/b/waitlist" method="post" style="display: inline-block;">
@@ -64,12 +71,14 @@
                     <% } %>
 
                     <% } else { %>
-                    <button type="button" class="btn btn-secondary" disabled style="cursor: default;">Maxed Borrow Count</button>
+                    <button type="button" class="btn btn-secondary" disabled style="cursor: default;">Maxed Borrow
+                        Count</button>
                     <% } %>
 
 
                     <form action="/b/remove" method="post" style="display: inline-block;">
                         <input type="hidden" name="interestedId" value="<%= interested[i].interestedId %>">
+                        <input type="hidden" name="bookId" value="<%= interested[i].bookId %>">
                         <button type="submit" class="btn btn-primary">Remove</button>
                     </form>
                 </td>
