@@ -68,6 +68,15 @@
             <input type="hidden" name="title" value="<%= b.data.title %>">
             <input type="hidden" name="bookId" value="<%= b.bookId %>">
             <input type="hidden" name="borrowId" value="<%= b.borrowId %>">
+            <input type="hidden" name="title" value="<%= b.data.title%>">
+            <input type="hidden" name="duedate" value="<%= b.duedate%>">
+            <% if(b.difference > 0) { %>
+                <input type="hidden" name="msg" value="returnlate">
+                <input type="hidden" name="latefee" value="<%= b.difference * latefee %>">
+            <% } else { %>
+                <input type="hidden" name="msg" value="return">
+            <% } %>
+
             <% if(b.difference>0) { %>
             <button type="submit" class="btn btn-primary">Pay fine and Return</button>
             <% } else { %>

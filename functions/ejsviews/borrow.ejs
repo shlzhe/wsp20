@@ -42,6 +42,9 @@
         <br>
         <form action="/b/confirmborrow" method="post" style="display:inline">
             <input type="hidden" name="bookId" value="<%= b.bookId %>">
+            <input type="hidden" name="title" value="<%= b.data.title%>">
+            <input type="hidden" name="duedate" value="<%= b.duedate%>">
+            <input type="hidden" name="msg" value="borrow">
             <input type="hidden" name="interestedId" value="<%= b.interestedId %>">
             <button type="submit" class="btn btn-primary">Agree and Borrow</button>
         </form>

@@ -17,15 +17,64 @@ var transporter = nodemailer.createTransport({
     }
 });
 
-function sendEmail(to) {
+function sendEmail(to, msg, title, image, date, duedate, latefee) {
 
-    const mailOptions = {
+    var mailOptions = {
         from: `no-reply@wsp20.com`,
         to,
-        subject: 'Test message',
-        html: `<h1>Order Confirmation</h1>
-         <p> <b>Email: </b>${to} </p>`
+        subject: '',
+        html: ``,
     };
+
+    if(msg === "return") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'Book Return Confirmation',
+            html: `
+                <h4>${date}</h4>
+                <h2>This email is to show that you have successfully returned: </h2><br>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3>
+                </body>`
+        };
+    }
+
+    else if(msg === "returnlate") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'LATE- Book Return Confirmation',
+            html: `
+                <h4>${date}</h4>
+                <h2>This email is to show that you have returned your books late </h2><br>
+                <h3>You have been charged $${latefee} to your account!</h3>
+                <h3>Due date: ${duedate} </h3>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3>
+                </body>`
+        };
+    }
+
+    else if(msg === "borrow") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'Borrowed Books Confirmation',
+            html: `
+                <head>
+                <h4>${date}</h4>
+                <h2>This email is to show that you have successfully borrowed: </h2><br>
+                </head>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3>
+                <h3>Due date: ${duedate} </h3>
+                </body>`
+        };
+    }
 
     return transporter.sendMail(mailOptions, (error, data) => {
         if (error) {
