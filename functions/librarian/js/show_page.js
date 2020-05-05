@@ -40,7 +40,7 @@ async function show_page_secured() {
             <img src="${p.image_url}" class="card-img-top" style="height:18rem; object-fit: contain;">
             <div class="card-body">
             <h5 class="card-title">${p.title}</h5>
-            <p class="card-text">${p.author}<br/>${p.summary}</p>
+            <p class="card-text">${p.author}<br/></p>
             <button class="btn btn-primary" type="button"
                 onclick="editProduct(${index})">Edit</button>
             <button class="btn btn-danger" type="button"

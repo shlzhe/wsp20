@@ -44,7 +44,6 @@ function add_page_secured() {
             <p id="image_error" style="color:red" />
         </div>
         <button class="btn btn-primary" type="button" onclick="addBook()">Add Book</button>
-        <button class="btn btn-primary" type="button" onclick="addProduct()">Add</button>
         <a href='/home' class="btn btn-danger">Cancel</a>    
     `;
 
@@ -55,11 +54,11 @@ function add_page_secured() {
     })
 }
 
-const Constants = require('../../myconstants.js')
+// const Constants = require('../../myconstants.js')
 
 async function addBook() {
 
-    const status = Constants.STATUS_AVAILABLE
+    const status = 0
     const title = document.getElementById('title').value
     const author = document.getElementById('author').value
     const publisher = document.getElementById('publisher').value
