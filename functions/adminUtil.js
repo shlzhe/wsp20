@@ -114,6 +114,24 @@ function sendEmail(to, msg, title, image, date, duedate, latefee) {
         };
     }
 
+    else if (msg === "waitlist") {
+        mailOptions = {
+            from: `no-reply@wsp20.com`,
+            to,
+            subject: 'Borrow Waitlisted Book',
+            html: `
+                <head>
+                <h4>${date}</h4>
+                <h2>This email is to inform you that you are next in line to borrow: </h2><br>
+                </head>
+                <body>
+                <img src="${image}" width="170"/>
+                <h3>Title: ${title} </h3><br>
+                <h2>Please log on to https://renjianl-wsp20.web.app to borrow the book</h2>
+                </body>`
+        };
+    }
+
     return transporter.sendMail(mailOptions, (error, data) => {
         if (error) {
             console.log("======================", error)
@@ -285,7 +303,7 @@ async function borrow(bookId, data) {
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
         const book = await books.doc(bookId).get()
-        if (book.data().status !== Constants.STATUS_AVAILABLE) {
+        if (book.data().status !== Constants.STATUS_AVAILABLE && !(book.data().waitlist[0] === data.uid)) {
             return false
         }
         await books.doc(bookId).update({ status: Constants.STATUS_UNAVAILABLE })
@@ -309,7 +327,7 @@ async function unborrow(bookId, borrowId) {
         var waitlistInterval = setInterval(async () => {
             book = await books.doc(bookId).get()
             fullwaitlist = book.data().waitlist
-            //sendemail to 
+            sendEmail(to, msg, title, image_url, date)
             fullwaitlist.splice(0, 1)
             console.log("===========================timesup")
             if (fullwaitlist.length === 0) {

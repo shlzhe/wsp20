@@ -119,7 +119,7 @@ app.post('/', auth, async (req, res) => {
             let books = []
             console.log("search: ================", search)
             const snapshot = await coll.where("title", '>=', search).where("title", '<=', search + '\uf8ff').get()
-            const snapshot2 = await coll.where("author", '==', search).get()
+            const snapshot2 = await coll.where("author", '>=', search).where("author", '<=', search + '\uf8ff').get()
             const snapshot3 = await coll.where("isbn", '==', parseInt(search)).get()
             snapshot.forEach(doc => {
                 books.push({ id: doc.id, data: doc.data() })
@@ -190,30 +190,30 @@ app.post('/', auth, async (req, res) => {
 //             console.log("next error=========", e)
 //         }
 //     }
-// })
+})
 
-// app.post('/b/book', auth, async (req, res) => {
-//     const iCount = await getiCount(req)
-//     const bCount = await getbCount(req)
-//     const coll1 = firebase.firestore().collection(Constants.COLL_BOOKS)
-//     const bookId = req.body.bookId
+app.post('/b/book', auth, async (req, res) => {
+    const iCount = await getiCount(req)
+    const bCount = await getbCount(req)
+    const coll1 = firebase.firestore().collection(Constants.COLL_BOOKS)
+    const bookId = req.body.bookId
 
-//     try {
-//         let books = []
-//         const snapshot = await coll1.get()
-//         snapshot.forEach(doc => {
-//             if (doc.id === bookId) {
-//                 avgRating = getAverage(doc.data().rating)
-//                 books.push({ bookId: doc.id, data: doc.data(), avgRating })
-//             }
-//         })
-//         res.setHeader('Cache-Control', 'private')
-//         res.render('book.ejs', { books, user: req.decodedIdToken, iCount, bCount })
-//     } catch (e) {
-//         res.setHeader('Cache-Control', 'private')
-//         console.log("&&&&&&&&&&&&&&&&", e)
-//         res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
-//     }
+    try {
+        let books = []
+        const snapshot = await coll1.get()
+        snapshot.forEach(doc => {
+            if (doc.id === bookId) {
+                avgRating = getAverage(doc.data().rating)
+                books.push({ bookId: doc.id, data: doc.data(), avgRating })
+            }
+        })
+        res.setHeader('Cache-Control', 'private')
+        res.render('book.ejs', { books, user: req.decodedIdToken, iCount, bCount })
+    } catch (e) {
+        res.setHeader('Cache-Control', 'private')
+        console.log("&&&&&&&&&&&&&&&&", e)
+        res.render('storefront.ejs', { error: e, user: req.decodedIdToken, iCount, bCount })
+    }
 })
 
 app.get('/b/about', auth, async (req, res) => {
@@ -532,7 +532,7 @@ app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
     const duedate = req.body.duedate
     try {
         console.log('+=++_+_+_+_+_+_+_+', msg)
-        await adminUtil.unborrow(bookId, borrowId)
+        await adminUtil.unborrow(bookId, borrowId, msg, title, image_url, date)
         await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image_url, date, duedate, latefee)
         const bCount = await getbCount(req) // bCount updated because of return
         res.setHeader('Cache-Control', 'private')
@@ -609,7 +609,7 @@ app.post('/b/lost', authAndRedirectSignIn, async (req, res) => {
             }
         })
         res.setHeader('Cache-Control', 'private')
-        res.render('borrowed.ejs', { message: "Reported loss, charged $300 + late fees", borrowed, user: req.decodedIdToken, iCount, bCount })
+        return res.render('borrowed.ejs', { message: "Reported loss, charged $300 + late fees", borrowed, user: req.decodedIdToken, iCount, bCount })
     } catch (e) {
         console.log('++++++++++++++++++++', e)
         res.setHeader('Cache-Control', 'private')
