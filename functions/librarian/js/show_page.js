@@ -5,10 +5,10 @@ function show_page() {
 let products
 
 async function show_page_secured() {
-    glPageContent.innerHTML = '<h1>Show Products</h1>'
+    glPageContent.innerHTML = '<h1>Show Books</h1>'
     glPageContent.innerHTML += `
         <a href='/home' class="btn btn-primary">Home</a>    
-        <a href='/add' class="btn btn-primary">Add Products</a>
+        <a href='/add' class="btn btn-primary">Add Book</a>
         <br><br>
         `
 
@@ -28,7 +28,7 @@ async function show_page_secured() {
     //console.log(products)
 
     if (products.length === 0) {
-        glPageContent.innerHTML += '<h1>No products in the database</h1>'
+        glPageContent.innerHTML += '<h1>No books in the database</h1>'
         return
     }
 

@@ -105,7 +105,7 @@ app.post('/', auth, async (req, res) => {
             let books = []
             const snapshot = await coll.orderBy(sortBy, order).get()
             snapshot.forEach(doc => {
-                books.push({ id: doc.id, data: doc.data() })
+                books.push({ bookId: doc.id, data: doc.data() })
             })
             res.setHeader('Cache-Control', 'private')
             res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount, bCount })
@@ -122,13 +122,13 @@ app.post('/', auth, async (req, res) => {
             const snapshot2 = await coll.where("author", '>=', search).where("author", '<=', search + '\uf8ff').get()
             const snapshot3 = await coll.where("isbn", '==', parseInt(search)).get()
             snapshot.forEach(doc => {
-                books.push({ id: doc.id, data: doc.data() })
+                books.push({ bookId: doc.id, data: doc.data() })
             })
             snapshot2.forEach(doc => {
-                books.push({ id: doc.id, data: doc.data() })
+                books.push({ bookId: doc.id, data: doc.data() })
             })
             snapshot3.forEach(doc => {
-                books.push({ id: doc.id, data: doc.data() })
+                books.push({ bookId: doc.id, data: doc.data() })
             })
             res.setHeader('Cache-Control', 'private')
             res.render('storefront.ejs', { error: false, books, user: req.decodedIdToken, iCount, bCount })
@@ -531,8 +531,8 @@ app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
     const msg = req.body.msg
     const latefee = req.body.latefee
     const duedate = req.body.duedate
-    try { 
-        await adminUtil.unborrow(bookId, borrowId, msg, title, image_url, date)
+    try {
+        await adminUtil.unborrow(bookId, borrowId, "waitlist", title, image_url, date)
         await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image_url, date, duedate, latefee)
         const bCount = await getbCount(req) // bCount updated because of return
         res.setHeader('Cache-Control', 'private')
