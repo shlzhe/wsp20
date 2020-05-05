@@ -155,10 +155,10 @@ async function createUser(req, res) {
         await admin.auth().createUser(
             { email, password, displayName, phoneNumber, photoURL }
         )
-        res.render('signin.ejs', { page: 'signin', user: false, error: 'Account created: Sign in please', cartCount: 0 })
+        res.render('signin.ejs', { page: 'signin', user: false, error: 'Account created: Sign in please', iCount: 0, bCount: 0 })
     } catch (e) {
         console.log(JSON.stringify(e))
-        res.render('signup.ejs', { error: e, user: false, page: 'signup', cartCount: 0 })
+        res.render('signup.ejs', { error: e, user: false, page: 'signup', iCount: 0, bCount: 0 })
     }
 }
 
@@ -303,7 +303,7 @@ async function borrow(bookId, data) {
     try {
         const books = admin.firestore().collection(Constants.COLL_BOOKS)
         const book = await books.doc(bookId).get()
-        if (book.data().status !== Constants.STATUS_AVAILABLE && book.data().waitlist[0] !== data.uid) {
+        if (book.data().status !== Constants.STATUS_AVAILABLE && (!book.data().waitlist || book.data().waitlist[0] !== data.uid)) {
             return false
         }
         await books.doc(bookId).update({ status: Constants.STATUS_UNAVAILABLE })
