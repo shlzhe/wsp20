@@ -414,11 +414,10 @@ app.post('/b/confirmborrow', authAndRedirectSignIn, async (req, res) => {
                         interested.push({ interestedId: b[i].id, bookId: doc.id, book: doc.data() })
                 }
             })
-            adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image, date, duedate, null)
-            await adminUtil.uninterested(interestedId)
             res.setHeader('Cache-Control', 'private')
             res.render('interested.ejs', { message, interested, user: req.decodedIdToken, iCount, bCount, maxed })
         } else {
+            adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image, date, duedate, null)
             await adminUtil.uninterested(interestedId)
             res.setHeader('Cache-Control', 'private')
             res.redirect('/b/borrowed')
@@ -466,16 +465,13 @@ app.post('/b/review', authAndRedirectSignIn, async (req, res) => {
     const date = firebase.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate())).toDate()
     const bookId = req.body.bookId
     const borrowId = req.body.borrowId
-    const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
-    const doc = await collection.doc(bookId).get()
-    const image = doc.data().image_url
     const msg = req.body.msg
     const latefee = req.body.latefee
     const duedate = req.body.duedate
     try {
         console.log('+=++_+_+_+_+_+_+_+', msg)
         await adminUtil.unborrow(bookId, borrowId)
-        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image, date, duedate, latefee)
+        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image_url, date, duedate, latefee)
         const bCount = await getbCount(req) // bCount updated because of return
         res.setHeader('Cache-Control', 'private')
         return res.render('review.ejs', { image_url, title, bookId, borrowId, user: req.decodedIdToken, iCount, bCount })
@@ -498,7 +494,6 @@ app.post('/b/confirmreturn', authAndRedirectSignIn, async (req, res) => {
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.send("Failed to Review " + e)
-
     }
 })
 
@@ -516,6 +511,49 @@ app.post('/b/waitlist', authAndRedirectSignIn, async (req, res) => {
     } catch (e) {
         res.setHeader('Cache-Control', 'private')
         res.send(e)
+    }
+})
+
+app.post('/b/lost', authAndRedirectSignIn, async (req, res) => {
+    const iCount = await getiCount(req)
+    const image_url = req.body.image_url
+    const title = req.body.title
+    const tdate = new Date()
+    const date = firebase.firestore.Timestamp.fromMillis(tdate.setDate(tdate.getDate())).toDate()
+    const ddate = tdate.setDate(tdate.getDate() + parseInt(Constants.SETTINGS.FASTFORWARD))
+    const curdate = firebase.firestore.Timestamp.fromMillis(ddate).toDate()
+    const bookId = req.body.bookId
+    const borrowId = req.body.borrowId
+    const msg = req.body.msg
+    const latefee = parseInt(req.body.latefee) + 300
+    try {
+        await adminUtil.unborrow(bookId, borrowId)
+        await adminUtil.sendEmail(req.decodedIdToken.email, msg, title, image_url, date, null, latefee)
+        const bCount = await getbCount(req) // bCount updated because of return
+        const b = await adminUtil.getBorrowed(req.decodedIdToken)
+        const collection = firebase.firestore().collection(Constants.COLL_BOOKS)
+        const snapshot = await collection.get()
+        let borrowed = []
+        snapshot.forEach(doc => {
+            for (let i = 0; i < b.length; i++) {
+                if (b[i].data.bookId === doc.id) {
+                    const duedate = b[i].data.duedate.toDate()
+                    borrowed.push({
+                        borrowId: b[i].id, bookId: doc.id, book: doc.data(), duedate,
+                        late: curdate.getTime() - duedate.getTime() > 0 ? true : false
+                        //late: new Date().getTime() - duedate.getTime() > 0 ? true : false
+                    })
+                }
+            }
+        })
+        res.setHeader('Cache-Control', 'private')
+        res.render('borrowed.ejs', { message: "Reported loss, charged $300 + late fees", borrowed, user: req.decodedIdToken, iCount, bCount })
+    } catch (e) {
+        console.log('++++++++++++++++++++', e)
+        res.setHeader('Cache-Control', 'private')
+        return res.render('borrowed.ejs',
+            { message: 'Return Failed. Try Again Later!', borrowed, user: req.decodedIdToken, iCount, bCount }
+        )
     }
 })
 
@@ -578,6 +616,13 @@ app.post('/admin/sysadmin', authSysAdmin, async (req, res) => {
     Constants.SETTINGS = { BOOKCOUNT: s1, DURATION: s2, FASTFORWARD: s3, LATEFEE: s4, WAITLIST: s5 }
     const settings = Constants.SETTINGS
     res.render('admin/sysadmin.ejs', { message: "Updated Successfully!", user: req.decodedIdToken, iCount, bCount, settings })
+})
+
+app.post('/admin/email', authSysAdmin, async (req, res) => {
+    console.log(req.body.to)
+    console.log(req.body.content)
+    adminUtil.sendEmail(req.body.to, "admin", req.body.content, null, null, null, null)
+    res.redirect('/admin/listUsers')
 })
 
 async function authSysAdmin(req, res, next) {

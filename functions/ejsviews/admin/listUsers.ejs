@@ -28,6 +28,12 @@
                 DisplayName: <%= u.displayName %><br>
                 PhoneNumber: <%= u.phoneNumber %><br>
                 <img height="100" src="<%= u.photoURL %>">
+                <br>
+                <form action="/admin/email" method="post" style="display:inline">
+                    <input hidden name="to" value="<%= u.email %>">
+                    <input type="text" name="content" placeholder="Enter message contents" size="75">
+                    <button type="submit" class="btn btn-primary">Send Email</button>
+                </form>
             </td>
         </tr>
         <% }) %>

@@ -68,13 +68,12 @@
             <input type="hidden" name="title" value="<%= b.data.title %>">
             <input type="hidden" name="bookId" value="<%= b.bookId %>">
             <input type="hidden" name="borrowId" value="<%= b.borrowId %>">
-            <input type="hidden" name="title" value="<%= b.data.title%>">
             <input type="hidden" name="duedate" value="<%= b.duedate%>">
             <% if(b.difference > 0) { %>
-                <input type="hidden" name="msg" value="returnlate">
-                <input type="hidden" name="latefee" value="<%= b.difference * latefee %>">
+            <input type="hidden" name="msg" value="returnlate">
+            <input type="hidden" name="latefee" value="<%= b.difference * latefee %>">
             <% } else { %>
-                <input type="hidden" name="msg" value="return">
+            <input type="hidden" name="msg" value="return">
             <% } %>
 
             <% if(b.difference>0) { %>
@@ -86,7 +85,13 @@
         <form action="/b/borrowed" method="get" style="display:inline">
             <button type="submit" class="btn btn-primary">Cancel</button>
         </form>
-        <form action="/b/lost" method="get" style="display:inline">
+        <form action="/b/lost" method="post" style="display:inline">
+            <input type="hidden" name="bookId" value="<%= b.bookId %>">
+            <input type="hidden" name="borrowId" value="<%= b.borrowId %>">
+            <input type="hidden" name="image_url" value="<%= b.data.image_url %>">
+            <input type="hidden" name="title" value="<%= b.data.title %>">
+            <input type="hidden" name="msg" value="lost">
+            <input type="hidden" name="latefee" value="<%= b.difference * latefee %>">
             <button type="submit" class="btn btn-primary">I lost the book</button>
         </form>
     </div>
